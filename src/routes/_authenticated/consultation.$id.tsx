@@ -16,7 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Send, Loader2, FlaskConical, ScanLine, Activity as ActivityIcon, Pause,
-  User as UserIcon, Stethoscope, GraduationCap, Sparkles,
+  User as UserIcon, Stethoscope, GraduationCap, Sparkles, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ExamResultsPanel } from "@/components/ExamResultsPanel";
@@ -31,6 +31,16 @@ export const Route = createFileRoute("/_authenticated/consultation/$id")({
 });
 
 interface MsgT { role: "user" | "assistant"; content: string; ts: number; }
+
+const CORRECTION_LOADING_MESSAGES = [
+  "Analyse de votre consultation…",
+  "Évaluation de votre raisonnement clinique…",
+  "Vérification des éléments recherchés…",
+  "Analyse des examens demandés…",
+  "Identification des points à améliorer…",
+  "Préparation de votre correction personnalisée…",
+  "Encore un instant… Kymia Motcho prépare votre correction. 🩺",
+];
 
 function ConsultationPage() {
   const { t, lang } = useI18n();
@@ -50,6 +60,10 @@ function ConsultationPage() {
 
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [submittedDiagnosis, setSubmittedDiagnosis] = useState<DiagT | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [correctionReady, setCorrectionReady] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -74,9 +88,28 @@ function ConsultationPage() {
   type DiagT = { main: string; differentials: string; arguments_for: string; arguments_against: string; exams_supporting: string; management: string };
   const submitMut = useMutation({
     mutationFn: async (diag: DiagT) => submit({ data: { id, diagnosis: diag } }),
-    onSuccess: () => navigate({ to: "/report/$id", params: { id } }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : t("consultation.errors.generic")),
+    onSuccess: () => {
+      setCorrectionReady(true);
+      window.setTimeout(() => navigate({ to: "/report/$id", params: { id } }), 700);
+    },
+    onError: (e) => setSubmissionError(e instanceof Error ? e.message : t("consultation.errors.generic")),
   });
+
+  useEffect(() => {
+    if (!submitMut.isPending) return;
+    setLoadingMessageIndex(0);
+    const interval = window.setInterval(() => {
+      setLoadingMessageIndex((current) => (current + 1) % CORRECTION_LOADING_MESSAGES.length);
+    }, 3500);
+    return () => window.clearInterval(interval);
+  }, [submitMut.isPending]);
+
+  function startSubmission(diagnosis: DiagT) {
+    if (submitMut.isPending || correctionReady) return;
+    setSubmittedDiagnosis(diagnosis);
+    setSubmissionError(null);
+    submitMut.mutate(diagnosis);
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -108,7 +141,16 @@ function ConsultationPage() {
   const isPremier = cycle === "premier";
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+    <>
+      <CorrectionLoadingOverlay
+        active={submitMut.isPending}
+        ready={correctionReady}
+        error={submissionError}
+        message={CORRECTION_LOADING_MESSAGES[loadingMessageIndex]}
+        onRetry={() => submittedDiagnosis && startSubmission(submittedDiagnosis)}
+        onReturn={() => setSubmissionError(null)}
+      />
+      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       {/* Chat panel */}
       <section className="flex flex-col rounded-2xl border bg-card shadow-[var(--shadow-card)] min-h-[70vh]">
         <header className="flex items-center justify-between border-b px-5 py-4">
@@ -129,7 +171,7 @@ function ConsultationPage() {
                 <Pause className="mr-1 h-4 w-4" /> {t("consultation.page.pause")}
               </Button>
             )}
-            <DiagnosisDialog disabled={isCompleted} onSubmit={(d) => submitMut.mutate(d)} loading={submitMut.isPending} />
+            <DiagnosisDialog disabled={isCompleted || submitMut.isPending} onSubmit={startSubmission} loading={submitMut.isPending} />
           </div>
         </header>
 
@@ -233,6 +275,70 @@ function ConsultationPage() {
           </Link>
         )}
       </aside>
+      </div>
+    </>
+  );
+}
+
+function CorrectionLoadingOverlay({
+  active, ready, error, message, onRetry, onReturn,
+}: {
+  active: boolean;
+  ready: boolean;
+  error: string | null;
+  message: string;
+  onRetry: () => void;
+  onReturn: () => void;
+}) {
+  if (!active && !ready && !error) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-live="polite">
+      <section className="w-full max-w-md overflow-hidden rounded-3xl border border-primary/20 bg-card p-7 text-center shadow-2xl sm:p-9">
+        {error ? (
+          <>
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-8 w-8" />
+            </div>
+            <h2 className="mt-5 font-serif text-2xl">Nous n’avons pas pu générer votre correction pour le moment.</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Votre consultation n’a pas été perdue. Vous pouvez réessayer en conservant toutes vos réponses.
+            </p>
+            <div className="mt-7 grid gap-2 sm:grid-cols-2">
+              <Button onClick={onRetry}>Réessayer</Button>
+              <Button variant="outline" onClick={onReturn}>Retour à ma consultation</Button>
+            </div>
+          </>
+        ) : ready ? (
+          <>
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[image:var(--gradient-primary)] text-primary-foreground shadow-lg animate-pulse">
+              <Stethoscope className="h-8 w-8" />
+            </div>
+            <h2 className="mt-5 font-serif text-2xl">Correction prête ! 🎉</h2>
+            <p className="mt-3 text-sm text-muted-foreground">Ouverture de votre correction personnalisée…</p>
+          </>
+        ) : (
+          <>
+            <div className="relative mx-auto grid h-24 w-24 place-items-center">
+              <div className="absolute inset-0 rounded-full border-4 border-primary/15" />
+              <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-primary border-r-primary/60" />
+              <div className="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-primary animate-pulse">
+                <Stethoscope className="h-8 w-8" />
+              </div>
+            </div>
+            <h2 className="mt-6 font-serif text-2xl sm:text-3xl">🩺 Analyse de votre consultation…</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Veuillez patienter pendant que Kymia analyse votre démarche clinique et prépare votre correction personnalisée.
+            </p>
+            <p className="mt-6 min-h-10 text-sm font-medium text-primary transition-opacity duration-500">{message}</p>
+            <div className="mx-auto mt-4 flex w-20 justify-center gap-1.5" aria-hidden="true">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" />
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 }

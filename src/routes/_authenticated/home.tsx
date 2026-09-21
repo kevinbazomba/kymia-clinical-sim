@@ -98,9 +98,9 @@ function HomePage() {
               <PlayCircle className="mr-2 h-5 w-5" />
               {t("home.hero.start")}
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate({ to: "/jury" })}>
-              <Gavel className="mr-2 h-5 w-5" />
-              {t("home.hero.jurySpace")}
+            <Button size="lg" variant="outline" onClick={() => navigate({ to: "/salle-de-garde" })}>
+              <Stethoscope className="mr-2 h-5 w-5" />
+              Salle de garde
             </Button>
             <a href={COMMUNITY_URL} target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="bg-emerald-600 text-white shadow-[var(--shadow-elegant)] hover:bg-emerald-700">

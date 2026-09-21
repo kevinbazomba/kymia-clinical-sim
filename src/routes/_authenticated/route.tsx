@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, Outlet, Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Activity, Home, History, User as UserIcon, LogOut, PlayCircle, ShieldCheck, Gavel } from "lucide-react";
+import { Activity, Home, History, User as UserIcon, LogOut, PlayCircle, ShieldCheck, Stethoscope } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { checkAdmin } from "@/lib/admin.functions";
@@ -78,7 +78,7 @@ function AuthLayout() {
           <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/home" icon={<Home className="h-4 w-4" />}>{t("common.nav.home")}</NavLink>
             <NavLink to="/specialties" icon={<PlayCircle className="h-4 w-4" />}>{t("common.nav.consult")}</NavLink>
-            <NavLink to="/jury" icon={<Gavel className="h-4 w-4" />}>{t("common.nav.jury")}</NavLink>
+            <NavLink to="/salle-de-garde" icon={<Stethoscope className="h-4 w-4" />}>Salle de garde</NavLink>
             <NavLink to="/history" icon={<History className="h-4 w-4" />}>{t("common.nav.history")}</NavLink>
             <NavLink to="/profile" icon={<UserIcon className="h-4 w-4" />}>{t("common.nav.profile")}</NavLink>
             {isAdmin && (
@@ -104,7 +104,7 @@ function AuthLayout() {
         <nav className="flex items-center justify-around border-t bg-background px-2 py-2 md:hidden">
           <MobileNavLink to="/home" icon={<Home className="h-4 w-4" />} label={t("common.nav.home")} />
           <MobileNavLink to="/specialties" icon={<PlayCircle className="h-4 w-4" />} label={t("common.nav.consult")} />
-          <MobileNavLink to="/jury" icon={<Gavel className="h-4 w-4" />} label={t("common.nav.jury")} />
+          <MobileNavLink to="/salle-de-garde" icon={<Stethoscope className="h-4 w-4" />} label="Salle de garde" />
           <MobileNavLink to="/history" icon={<History className="h-4 w-4" />} label={t("common.nav.history")} />
           <MobileNavLink to="/profile" icon={<UserIcon className="h-4 w-4" />} label={t("common.nav.profile")} />
         </nav>

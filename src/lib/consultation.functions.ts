@@ -478,12 +478,18 @@ export const submitDiagnosis = createServerFn({ method: "POST" })
     }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
-      .from("consultations").select("case_data, messages, exams, user_id, specialty, cycle, language").eq("id", data.id).single();
+      .from("consultations").select("case_data, messages, exams, user_id, specialty, cycle, language, status, report").eq("id", data.id).single();
     if (error || !row) throw new Error("Consultation introuvable");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((row as any).user_id !== context.userId) throw new Error("Accès refusé");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cycle: string = (row as any).cycle ?? "second";
+    // A client retry (for example after a network interruption) must never
+    // generate or count a second correction for the same consultation.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((row as any).status === "completed" && (row as any).report) {
+      return { report: (row as any).report as Report, cycle };
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lang: AiLang = normalizeLang((row as any).language);
 
@@ -530,6 +536,8 @@ Pénalise fermement : questions cruciales oubliées, examens inutiles, mauvais r
 
 Chaque sous-note (0-100) doit être cohérente avec le score global et respecter le barème ci-dessus.
 
+Le champ "reference_course" est obligatoire : rédige un véritable cours de révision détaillé sur la pathologie diagnostiquée, en Markdown structuré avec des titres. Il doit couvrir la définition, la physiopathologie, les facteurs de risque, la clinique, la démarche diagnostique, la prise en charge, les complications, le pronostic et les points clés à retenir. Adapte-le au contexte africain lorsque cela est pertinent.
+
 Réponds STRICTEMENT en JSON valide :
 {
   "score": <0-100>,
@@ -546,11 +554,12 @@ Réponds STRICTEMENT en JSON valide :
   "expert_approach": "démarche d'expert étape par étape",
   "full_explanation": "explication pédagogique complète, signée Kymia Motcho",
   "pathophysiology": "physiopathologie détaillée",
-  "advice": "conseils personnalisés — signés Kymia Motcho"
+  "advice": "conseils personnalisés — signés Kymia Motcho",
+  "reference_course": "cours détaillé en Markdown sur la pathologie : définition, physiopathologie, épidémiologie/facteurs de risque, clinique, diagnostic, examens complémentaires, prise en charge, complications, pronostic et points clés à retenir"
 }${langDirective(lang)}`;
 
-    // The correction is the essential response. Generating an exhaustive reference
-    // course here made the submission wait for a second, much longer AI request.
+    // The reference course is generated together with the correction so it is
+    // immediately available on the report page after the consultation.
     const { text } = await generateText({ model, prompt, temperature: 0.2 });
     const report = extractJson<Report>(text);
     report.signed_by = "Kymia Motcho";
