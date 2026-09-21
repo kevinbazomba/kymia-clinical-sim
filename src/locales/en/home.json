@@ -1,0 +1,63 @@
+{
+  "meta": { "title": "Home — Kymia" },
+  "nav": {
+    "signOut": "Sign out",
+    "admin": "Admin",
+    "accueil": "Home",
+    "consulter": "Consult",
+    "jury": "Jury",
+    "historique": "History",
+    "profil": "Profile"
+  },
+  "winnerBanner": {
+    "eyebrow": "🥇 Winner of the last Kymia Gold Jury",
+    "specialtyPrefix": "Specialty: {specialty} · ",
+    "nextJury": "Next Jury"
+  },
+  "hero": {
+    "welcome": "Welcome",
+    "greeting": "Hello, ",
+    "defaultName": "Doctor",
+    "subtitle": "Ready for your next consultation? Choose a specialty, the AI generates a unique patient.",
+    "start": "Start a consultation",
+    "jurySpace": "Jury area",
+    "joinCommunity": "Join the community"
+  },
+  "stats": {
+    "consultations": "Consultations",
+    "passRate": "Pass rate",
+    "avgScore": "Average score",
+    "totalScore": "Total score"
+  },
+  "specialties": {
+    "title": "Your specialties",
+    "cases": "cases"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "anonymous": "Anonymous",
+    "points": "pts",
+    "empty": "Be the first on the leaderboard."
+  },
+  "guide": {
+    "title": "How it works",
+    "subtitle": "Get started with Kymia in 6 simple steps.",
+    "steps": [
+      { "title": "Start a consultation", "desc": "Click \"Start a consultation\", choose a specialty — Kymia Motcho generates a unique patient." },
+      { "title": "Ask & examine", "desc": "Talk freely with the patient, request physical exam, labs and imaging based on your hypotheses." },
+      { "title": "Pause & resume", "desc": "Click \"Pause\" at any time: your case is saved and resumes exactly as-is from your history." },
+      { "title": "Make your diagnosis", "desc": "Fill in the form: main diagnosis, differentials, arguments, management plan." },
+      { "title": "Feedback & history", "desc": "Review the detailed report (score, reference course, downloadable PDF) from the History tab." },
+      { "title": "Join the Jury", "desc": "Every week (Fri 00:00 → Sun 23:59 Kinshasa time), face all clinicians on the same case — the 🥇 Kymia Gold badge is at stake." }
+    ]
+  },
+  "rules": {
+    "title": "Simulation rules",
+    "items": [
+      "The patient **never** reveals their diagnosis. Ask the right questions.",
+      "Each requested exam is returned realistically, consistent with the hidden condition.",
+      "You can **pause** the consultation and resume it later.",
+      "At the end of the case: score, missed exams, expected reasoning, complete pathophysiology."
+    ]
+  }
+}

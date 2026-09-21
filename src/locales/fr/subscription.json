@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "Passez à Kymia Premium",
+    "description": "Accès illimité aux cas cliniques, corrections IA, classement et Jury Kymia."
+  },
+  "backHome": "Retour à l'accueil",
+  "hero": {
+    "title": "🚀 Passez au niveau supérieur avec ",
+    "titleHighlight": "KYMIA Premium",
+    "subtitle": "Vous avez utilisé vos **deux consultations gratuites**. Continuez à développer votre raisonnement clinique grâce à un accès illimité aux fonctionnalités de KYMIA."
+  },
+  "benefits": {
+    "title": "Tout ce que Premium débloque",
+    "items": [
+      "Cas cliniques illimités",
+      "Toutes les spécialités médicales",
+      "IA pédagogique Kymia Motcho",
+      "Corrections extrêmement détaillées",
+      "Rapports PDF téléchargeables",
+      "Historique complet",
+      "Classement mondial",
+      "Participation au Jury hebdomadaire",
+      "Badge Kymia Gold",
+      "Mises à jour régulières"
+    ]
+  },
+  "pricing": {
+    "offer": "Offre lancement",
+    "currency": "USD",
+    "perMonth": " / mois",
+    "perYear": " / an",
+    "monthlyNote": "Accès aux fonctionnalités premium pendant 30 jours.",
+    "annualNote": "Accès aux fonctionnalités premium pendant 12 mois.",
+    "description": "Un investissement modeste pour un entraînement clinique quotidien, une pédagogie IA et une communauté active.",
+    "subscribe": "💬 S'ABONNER",
+    "note": "Ouvre WhatsApp — un administrateur vous répond directement."
+  },
+  "whatsappMessage": "Bonjour, je souhaite souscrire à l'abonnement KYMIA Premium. Mon adresse e-mail d'inscription est : {email}.",
+  "adminNotice": "🔑 Vous êtes administrateur : les limites d'essai ne s'appliquent pas à votre compte.",
+  "install": {
+    "buttonLabelCompact": "Installer",
+    "buttonLabelFull": "Installer Kymia",
+    "toastInstalling": "Kymia s'installe sur votre appareil…",
+    "toastPromptError": "Impossible d'ouvrir la fenêtre d'installation.",
+    "toastIos": "Sur iPhone/iPad : Partager → « Sur l'écran d'accueil » pour installer Kymia.",
+    "toastGeneric": "Utilisez le menu de votre navigateur puis « Installer l'application ».",
+    "dialog": {
+      "title": "Installer Kymia sur votre appareil",
+      "description": "Accédez à vos consultations et au Jury Kymia depuis l'écran d'accueil, comme une vraie application — hors ligne partiel, sans passer par le navigateur.",
+      "later": "Plus tard",
+      "install": "Installer",
+      "iosHint": "Sur iPhone/iPad : Partager → « Sur l'écran d'accueil ».",
+      "genericHint": "Utilisez le menu du navigateur puis « Installer »."
+    }
+  }
+}

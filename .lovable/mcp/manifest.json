@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://xkbtyljhwxbepmptsjed.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "kymia-mcp",
+      "version": "0.1.0",
+      "title": "Kymia — Simulateur clinique"
+    },
+    "tools": [
+      {
+        "name": "list_specialties",
+        "title": "Lister les spécialités Kymia",
+        "description": "Renvoie la liste des spécialités cliniques proposées par Kymia pour lancer une consultation simulée.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_consultations",
+        "title": "Mes consultations",
+        "description": "Liste les consultations simulées de l'utilisateur connecté (les plus récentes d'abord). Retourne l'id, la spécialité, le cycle, le statut, le score et la date.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "in_progress",
+                "completed",
+                "any"
+              ],
+              "default": "any",
+              "description": "Filtrer par statut."
+            },
+            "limit": {
+              "type": "integer",
+              "default": 20,
+              "description": "Nombre maximum de consultations (1-100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_consultation",
+        "title": "Détail d'une consultation",
+        "description": "Retourne le détail complet d'une consultation appartenant à l'utilisateur connecté : cas clinique, messages échangés, examens prescrits, diagnostic soumis et rapport de correction.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Identifiant de la consultation."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_my_profile",
+        "title": "Mon profil Kymia",
+        "description": "Retourne le profil Kymia de l'utilisateur connecté : nom affiché, pays, profession, score total, nombre de consultations et badges Kymia Gold.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_jury_history",
+        "title": "Historique du Jury Kymia",
+        "description": "Liste les copies déposées par l'utilisateur connecté aux sessions du Jury Kymia (mercredi et vendredi 20h). Retourne le score, la date et la session associée.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "default": 20,
+              "description": "Nombre maximum de copies (1-100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

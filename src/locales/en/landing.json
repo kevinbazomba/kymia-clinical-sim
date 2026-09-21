@@ -1,0 +1,27 @@
+{
+  "head": {
+    "title": "Kymia — AI-powered medical clinical simulation",
+    "description": "Learn medical semiology through interactive consultations with virtual patients. Diagnosis, exams, clinical reasoning."
+  },
+  "nav": {
+    "signIn": "Sign in",
+    "start": "Get started"
+  },
+  "hero": {
+    "badge": "Generative AI · unlimited cases · fully in French",
+    "titleLine1": "The medical consultation,",
+    "titleLine2": "just like real life.",
+    "description": "Kymia is a university clinical simulator. You lead the interview, examine the patient, order tests, make your diagnosis — the AI plays the patient and the senior examiner.",
+    "ctaSignup": "Create a free account",
+    "ctaSignin": "I already have an account"
+  },
+  "features": {
+    "realPatients": { "title": "Realistic virtual patients", "desc": "Every case is unique. The patient responds just like in real life: imprecise, sometimes forgetful." },
+    "reasoning": { "title": "Clinical reasoning", "desc": "Physical exams, labs, imaging: order freely. Results stay consistent with the underlying condition." },
+    "feedback": { "title": "Educational feedback", "desc": "A detailed report after each case: score, missed exams, pathophysiology, personalized advice." },
+    "leaderboard": { "title": "Global leaderboard", "desc": "Compare your performance with other learners and progress specialty by specialty." },
+    "privacy": { "title": "Your data stays private", "desc": "Your consultations are saved so you can resume any time, exactly where you left off." },
+    "specialties": { "title": "6 specialties", "desc": "Internal medicine, surgery, pediatrics, obstetrics & gynecology, psychiatry, emergency medicine." }
+  },
+  "footer": "© {year} Kymia · Educational simulation. No real medical value."
+}

@@ -1,0 +1,29 @@
+{
+  "meta": { "title": "Profil — Kymia" },
+  "header": {
+    "title": "Mon profil",
+    "subtitle": "Personnalisez votre identité publique."
+  },
+  "form": {
+    "displayName": "Nom affiché",
+    "level": "Niveau",
+    "country": "Pays",
+    "countryPlaceholder": "France",
+    "save": "Enregistrer"
+  },
+  "toast": {
+    "updated": "Profil mis à jour",
+    "error": "Erreur"
+  },
+  "stats": {
+    "consultations": "Consultations",
+    "totalScore": "Score total",
+    "kymiaGold": "🥇 Kymia Gold"
+  },
+  "goldHistory": {
+    "title": "Historique Kymia Gold",
+    "description": "Chaque victoire au Jury Kymia est enregistrée ici — le badge principal est temporaire jusqu'au prochain Jury.",
+    "specialtyFallback": "Spécialité",
+    "empty": "Aucune victoire enregistrée pour l'instant. Le prochain Jury vous attend !"
+  }
+}

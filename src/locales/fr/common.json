@@ -1,0 +1,127 @@
+{
+  "brand": "Kymia",
+  "language": {
+    "title": "Langue / Language",
+    "description": "Choisissez la langue de l'interface, des consultations et des corrections.",
+    "fr": "🇫🇷 Français",
+    "en": "🇬🇧 English",
+    "saved": "Langue mise à jour",
+    "switchToEnglish": "Switch to English",
+    "switchToFrench": "Passer en français",
+    "detect": {
+      "title": "🇬🇧 Do you prefer to use KYMIA in English?",
+      "description": "You can change your language at any time from your Profile settings.",
+      "useEnglish": "Use English",
+      "continueFrench": "Continue in French"
+    },
+    "banner": {
+      "title": "🌍 English speaker?",
+      "description": "You can use KYMIA in English. Go to: Profile → Settings → Language → English."
+    }
+  },
+  "nav": {
+    "home": "Accueil",
+    "consult": "Consulter",
+    "jury": "Jury",
+    "history": "Historique",
+    "profile": "Profil",
+    "admin": "Admin",
+    "premium": "Abonnement",
+    "signIn": "Se connecter",
+    "signUp": "Commencer",
+    "signOut": "Se déconnecter",
+    "install": "Installer l'application"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "continue": "Continuer",
+    "confirm": "Confirmer",
+    "retry": "Réessayer",
+    "search": "Rechercher",
+    "send": "Envoyer",
+    "download": "Télécharger",
+    "downloadPdf": "Télécharger le PDF",
+    "print": "Imprimer",
+    "export": "Exporter",
+    "filter": "Filtrer",
+    "refresh": "Actualiser",
+    "seeMore": "Voir plus",
+    "seeDetails": "Voir le détail",
+    "start": "Démarrer",
+    "submit": "Soumettre"
+  },
+  "states": {
+    "loading": "Chargement…",
+    "loadingCase": "Génération du cas clinique…",
+    "saving": "Enregistrement…",
+    "empty": "Aucune donnée pour l'instant.",
+    "error": "Une erreur est survenue",
+    "notFound": "Page introuvable",
+    "notFoundDescription": "Cette page n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'accueil",
+    "required": "Champ obligatoire"
+  },
+  "labels": {
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "displayName": "Nom affiché",
+    "country": "Pays",
+    "whatsapp": "WhatsApp",
+    "profession": "Profession",
+    "level": "Niveau",
+    "specialty": "Spécialité",
+    "subspecialty": "Sous-spécialité",
+    "date": "Date",
+    "score": "Score",
+    "status": "Statut",
+    "difficulty": "Difficulté",
+    "patient": "Patient",
+    "age": "Âge",
+    "sex": "Sexe",
+    "years": "ans",
+    "male": "Homme",
+    "female": "Femme"
+  },
+  "difficulty": {
+    "facile": "Facile",
+    "intermédiaire": "Intermédiaire",
+    "difficile": "Avancé"
+  },
+  "consultationStatus": {
+    "in_progress": "En cours",
+    "paused": "En pause",
+    "completed": "Terminée"
+  },
+  "levels": {
+    "student": "Étudiant en médecine",
+    "extern": "Externe",
+    "intern": "Interne",
+    "resident": "Résident / Chef de clinique",
+    "physician": "Médecin diplômé"
+  },
+  "clinical": {
+    "diagnosis": "Diagnostic",
+    "mainDiagnosis": "Diagnostic principal",
+    "differentials": "Diagnostics différentiels",
+    "reasoning": "Raisonnement clinique",
+    "physicalExam": "Examen clinique",
+    "biology": "Examens biologiques",
+    "imaging": "Imagerie",
+    "results": "Résultats",
+    "management": "Prise en charge",
+    "argumentsFor": "Arguments pour",
+    "argumentsAgainst": "Arguments contre",
+    "chiefComplaint": "Motif de consultation"
+  },
+  "toast": {
+    "genericError": "Une erreur est survenue. Merci de réessayer.",
+    "saved": "Modifications enregistrées"
+  }
+}

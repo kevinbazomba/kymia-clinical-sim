@@ -1,0 +1,127 @@
+{
+  "brand": "Kymia",
+  "language": {
+    "title": "Language / Langue",
+    "description": "Choose the language of the interface, consultations and feedback.",
+    "fr": "🇫🇷 Français",
+    "en": "🇬🇧 English",
+    "saved": "Language updated",
+    "switchToEnglish": "Switch to English",
+    "switchToFrench": "Passer en français",
+    "detect": {
+      "title": "🇬🇧 Do you prefer to use KYMIA in English?",
+      "description": "You can change your language at any time from your Profile settings.",
+      "useEnglish": "Use English",
+      "continueFrench": "Continue in French"
+    },
+    "banner": {
+      "title": "🌍 Prefer French?",
+      "description": "KYMIA is also available in French. Go to: Profile → Settings → Language → Français."
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "consult": "Consult",
+    "jury": "Jury",
+    "history": "History",
+    "profile": "Profile",
+    "admin": "Admin",
+    "premium": "Subscription",
+    "signIn": "Sign in",
+    "signUp": "Get started",
+    "signOut": "Sign out",
+    "install": "Install the app"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "retry": "Try again",
+    "search": "Search",
+    "send": "Send",
+    "download": "Download",
+    "downloadPdf": "Download PDF",
+    "print": "Print",
+    "export": "Export",
+    "filter": "Filter",
+    "refresh": "Refresh",
+    "seeMore": "See more",
+    "seeDetails": "View details",
+    "start": "Start",
+    "submit": "Submit"
+  },
+  "states": {
+    "loading": "Loading…",
+    "loadingCase": "Generating the clinical case…",
+    "saving": "Saving…",
+    "empty": "No data yet.",
+    "error": "Something went wrong",
+    "notFound": "Page not found",
+    "notFoundDescription": "This page does not exist or has been moved.",
+    "backHome": "Back to home",
+    "required": "Required field"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "displayName": "Display name",
+    "country": "Country",
+    "whatsapp": "WhatsApp",
+    "profession": "Profession",
+    "level": "Level",
+    "specialty": "Specialty",
+    "subspecialty": "Subspecialty",
+    "date": "Date",
+    "score": "Score",
+    "status": "Status",
+    "difficulty": "Difficulty",
+    "patient": "Patient",
+    "age": "Age",
+    "sex": "Sex",
+    "years": "y.o.",
+    "male": "Male",
+    "female": "Female"
+  },
+  "difficulty": {
+    "facile": "Easy",
+    "intermédiaire": "Intermediate",
+    "difficile": "Advanced"
+  },
+  "consultationStatus": {
+    "in_progress": "In progress",
+    "paused": "Paused",
+    "completed": "Completed"
+  },
+  "levels": {
+    "student": "Medical student",
+    "extern": "Clinical clerk",
+    "intern": "Intern",
+    "resident": "Resident / Chief resident",
+    "physician": "Qualified physician"
+  },
+  "clinical": {
+    "diagnosis": "Diagnosis",
+    "mainDiagnosis": "Main diagnosis",
+    "differentials": "Differential diagnosis",
+    "reasoning": "Clinical reasoning",
+    "physicalExam": "Physical examination",
+    "biology": "Laboratory investigations",
+    "imaging": "Imaging",
+    "results": "Results",
+    "management": "Management",
+    "argumentsFor": "Arguments in favour",
+    "argumentsAgainst": "Arguments against",
+    "chiefComplaint": "Chief complaint"
+  },
+  "toast": {
+    "genericError": "Something went wrong. Please try again.",
+    "saved": "Changes saved"
+  }
+}

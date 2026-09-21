@@ -1,0 +1,27 @@
+{
+  "head": {
+    "title": "Kymia — Simulation clinique médicale par IA",
+    "description": "Apprenez la sémiologie médicale à travers des consultations interactives avec patients virtuels. Diagnostic, examens, raisonnement clinique."
+  },
+  "nav": {
+    "signIn": "Se connecter",
+    "start": "Commencer"
+  },
+  "hero": {
+    "badge": "IA générative · cas illimités · 100% en français",
+    "titleLine1": "La consultation médicale,",
+    "titleLine2": "comme en vrai.",
+    "description": "Kymia est un simulateur clinique universitaire. Vous menez l'interrogatoire, examinez le patient, prescrivez les examens, posez votre diagnostic — l'IA joue le patient et le correcteur senior.",
+    "ctaSignup": "Créer un compte gratuit",
+    "ctaSignin": "J'ai déjà un compte"
+  },
+  "features": {
+    "realPatients": { "title": "Patients virtuels réalistes", "desc": "Chaque cas est unique. Le patient répond comme dans la vraie vie : imprécis, parfois oublieux." },
+    "reasoning": { "title": "Raisonnement clinique", "desc": "Examens physiques, biologie, imagerie : prescrivez librement. Les résultats restent cohérents avec la pathologie." },
+    "feedback": { "title": "Correction pédagogique", "desc": "Un rapport détaillé après chaque cas : score, examens oubliés, physiopathologie, conseils personnalisés." },
+    "leaderboard": { "title": "Classement mondial", "desc": "Comparez vos performances aux autres apprenants et progressez spécialité par spécialité." },
+    "privacy": { "title": "Vos données sont privées", "desc": "Vos consultations sont sauvegardées et reprenez-les à tout moment, exactement où vous vous étiez arrêté." },
+    "specialties": { "title": "6 spécialités", "desc": "Médecine interne, chirurgie, pédiatrie, gynéco-obstétrique, psychiatrie, urgences." }
+  },
+  "footer": "© {year} Kymia · Simulation pédagogique. Aucune valeur médicale réelle."
+}

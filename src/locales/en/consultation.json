@@ -1,0 +1,180 @@
+{
+  "specialties": {
+    "eyebrow": "New consultation",
+    "title": "Choose a specialty",
+    "subtitle": "The AI generates a unique virtual patient. No case ever repeats.",
+    "aiPreparing": "The AI is preparing the patient…",
+    "seeSubspecialties": "See subspecialties →",
+    "start": "Start →"
+  },
+  "subspecialties": {
+    "title": "Choose a subspecialty",
+    "subtitle": "The AI will generate a case specific to the selected subspecialty.",
+    "noSubspecialties": "This specialty has no subspecialties.",
+    "backToSpecialties": "Back to specialties",
+    "aiPreparingCase": "The AI is preparing the case…",
+    "choose": "Choose →",
+    "defaultSpecialtyLabel": "Internal medicine"
+  },
+  "subscription": {
+    "accountSuspended": {
+      "title": "Account suspended",
+      "body": "Your account is currently suspended by the administration. Contact us for more information."
+    },
+    "suspended": {
+      "title": "Subscription suspended",
+      "body": "Your subscription is currently suspended. To regain full access to KYMIA, please renew your subscription."
+    },
+    "inactive": {
+      "title": "Inactive subscription",
+      "body": "Renew your subscription to access consultations."
+    },
+    "later": "Later",
+    "subscribeCta": "Subscribe",
+    "contactAdmin": "Contact administration",
+    "reactivateMessage": "Hello, I would like to reactivate my KYMIA Premium subscription."
+  },
+  "errors": {
+    "tooManyRequests": "Too many AI requests. Please try again in a moment.",
+    "tooManyRequestsShort": "Too many AI requests. Try again.",
+    "aiCreditsExhausted": "AI credits exhausted. Contact the administrator.",
+    "aiCreditsExhaustedShort": "AI credits exhausted.",
+    "generic": "Error"
+  },
+  "cycleDialog": {
+    "title": "Choose your level",
+    "premier": {
+      "title": "Undergraduate",
+      "description": "Years 1 to 3. Guided by {mentor}, your virtual mentor. No impact on the world ranking."
+    },
+    "second": {
+      "title": "Graduate",
+      "description": "M1, M2, M3, MS, Dr… Autonomous consultation, strict evaluation by Kymia Motcho. Counts for the world ranking."
+    }
+  },
+  "page": {
+    "title": "Consultation",
+    "patientFallback": "Patient",
+    "motif": "Chief complaint",
+    "pause": "Pause",
+    "paused": "Paused",
+    "diagnoseButton": "Make a diagnosis",
+    "startPrompt": "Start the interview by asking your first question.",
+    "you": "You · doctor",
+    "patient": "Patient",
+    "patientThinking": "The patient is thinking…",
+    "inputPlaceholder": "Ask the patient a question…",
+    "seeReport": "See the report",
+    "investigations": {
+      "title": "Investigations",
+      "subtitle": "The AI returns a consistent result.",
+      "tabClinical": "Clinical",
+      "tabBiology": "Labs",
+      "tabImaging": "Imaging",
+      "resultReady": "Result available",
+      "customSearchLabel": "Free-text exam search",
+      "customSearchPlaceholder": "E.g. Lumbar puncture, EMG, Echocardiogram…",
+      "customSearchButton": "Request",
+      "customSearchHelp": "The AI will generate a result even if the exam isn't in the list."
+    },
+    "mentor": {
+      "name": "Dr Mekah",
+      "subtitle": "Mentor · Undergraduate",
+      "empty": "Your mentor will guide you.",
+      "you": "You",
+      "thinking": "Dr Mekah is thinking…",
+      "questionPlaceholder": "A specific question for your mentor? (optional)",
+      "askAdvice": "Ask for advice",
+      "send": "Send"
+    },
+    "diagnosisDialog": {
+      "title": "Your diagnosis",
+      "mainLabel": "Main diagnosis *",
+      "mainPlaceholder": "E.g. acute appendicitis",
+      "differentialsLabel": "Differential diagnoses",
+      "differentialsPlaceholder": "Cholecystitis, gastroenteritis...",
+      "argumentsForLabel": "Arguments in favor",
+      "argumentsAgainstLabel": "Arguments against",
+      "examsSupportingLabel": "Exams that supported the diagnosis",
+      "managementLabel": "Management plan",
+      "mainRequired": "Main diagnosis is required",
+      "submit": "Submit and get feedback"
+    }
+  },
+  "examResultsPanel": {
+    "title": "Investigation results",
+    "help": "All results remain available throughout the consultation. Scroll to browse the list.",
+    "empty": "No exam requested yet.",
+    "categories": {
+      "physical": "Clinical exam",
+      "biology": "Labs",
+      "imaging": "Imaging",
+      "custom": "Other investigations"
+    }
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "All your past and ongoing consultations.",
+    "empty": "No consultations yet.",
+    "cta": "Start my first consultation →"
+  },
+  "report": {
+    "title": "Feedback report",
+    "realDiagnosis": "Actual diagnosis",
+    "yourDiagnosis": "Your diagnosis",
+    "downloadPdf": "Download PDF",
+    "unavailable": "Report unavailable.",
+    "backHistory": "← History",
+    "scores": {
+      "diagnosis": "Diagnosis",
+      "interrogation": "History-taking",
+      "physicalExam": "Physical exam",
+      "examRelevance": "Exam relevance",
+      "reasoning": "Reasoning"
+    },
+    "clinicalCase": {
+      "title": "Clinical case",
+      "patient": "Patient",
+      "motif": "Chief complaint",
+      "difficulty": "Difficulty"
+    },
+    "strengths": "Strengths",
+    "weaknesses": "Areas to improve",
+    "missedQuestions": "Missed questions",
+    "missedExams": "Missed exams",
+    "unnecessaryExams": "Unnecessary exams",
+    "advice": "Personalized advice",
+    "expertApproach": "An expert's approach",
+    "fullExplanation": "Full case explanation",
+    "pathophysiology": "Pathophysiology",
+    "referenceCourse": {
+      "eyebrow": "Study sheet",
+      "title": "Reference course — {diagnosis}"
+    },
+    "detail": {
+      "title": "Consultation details",
+      "interrogation": "History-taking",
+      "doctor": "Doctor",
+      "patient": "Patient",
+      "examsAndResults": "Exams and results"
+    },
+    "actions": {
+      "newConsultation": "New consultation",
+      "history": "History",
+      "downloadPdf": "Download PDF"
+    },
+    "beginnerSummary": {
+      "eyebrow": "Beginner mode",
+      "title": "Beginner's feedback summary",
+      "goodQuestions": "Good questions asked",
+      "forgottenQuestions": "Forgotten questions",
+      "reasoningErrors": "Reasoning errors",
+      "goodExams": "Well-chosen exams",
+      "uselessExams": "Unnecessary exams",
+      "semiologyToReview": "Semiology to review",
+      "acquiredSkills": "Skills acquired",
+      "nextObjectives": "Next objectives",
+      "davyMessageTitle": "Message from Dr Davy"
+    }
+  }
+}

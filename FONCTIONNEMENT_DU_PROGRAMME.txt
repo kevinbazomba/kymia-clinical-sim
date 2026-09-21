@@ -1,0 +1,319 @@
+ANALYSE FONCTIONNELLE DU PROGRAMME KYMIA CLINICAL SIM
+=====================================================
+
+1. OBJECTIF GENERAL
+-------------------
+Kymia est une application web de formation médicale par simulation clinique.
+Elle permet à un étudiant ou professionnel de santé de jouer le rôle du
+praticien face à des patients virtuels. L'utilisateur interroge le patient,
+demande des examens, pose un diagnostic, puis reçoit une correction détaillée
+générée par intelligence artificielle.
+
+Le projet est bilingue (français/anglais), utilisable sur mobile et installable
+comme application web progressive (PWA).
+
+
+2. PARCOURS D'UN UTILISATEUR
+----------------------------
+
+1) Arrivée et authentification
+   - La page d'accueil présente Kymia et ses fonctionnalités.
+   - L'utilisateur peut créer un compte, se connecter avec e-mail/mot de passe,
+     réinitialiser son mot de passe, ou utiliser Google / Apple.
+   - A la création du compte, une fiche de profil est créée automatiquement.
+     Elle contient notamment le pseudonyme, le niveau, le pays, la profession,
+     le téléphone WhatsApp et les statistiques de progression.
+
+2) Accès aux simulations
+   - Un nouveau compte dispose de 2 consultations d'essai gratuites.
+   - Après ces deux essais, les simulations et le Jury nécessitent un
+     abonnement actif ou gratuit accordé par un administrateur.
+   - Un compte ou un abonnement suspendu, ainsi qu'un abonnement expiré,
+     bloque l'accès.
+   - Les administrateurs ne sont pas limités.
+
+3) Choix de spécialité et lancement d'une consultation
+   - L'utilisateur sélectionne une spécialité, et si nécessaire une
+     sous-spécialité (par exemple en médecine interne).
+   - Le serveur prépare un cas clinique unique puis crée une consultation en
+     cours dans la base de données.
+
+4) Déroulement de la consultation simulée
+   - L'écran présente la plainte initiale et les premières informations du
+     patient fictif.
+   - L'utilisateur pose ses questions dans le chat ; l'IA répond en restant
+     cohérente avec les informations cachées du cas.
+   - Il peut prescrire des examens cliniques, biologiques ou d'imagerie ; l'IA
+     fournit les résultats appropriés.
+   - La consultation peut être mise en pause puis reprise.
+   - L'utilisateur soumet ensuite : diagnostic principal, diagnostics
+     différentiels, arguments, examens utiles et prise en charge.
+
+5) Correction et progression
+   - L'IA compare la copie au diagnostic réel, à la physiopathologie, aux
+     examens attendus et à la prise en charge prévue.
+   - Un rapport est enregistré : note globale, précision diagnostique, qualité
+     de l'interrogatoire, qualité/pertinence des examens, rapidité du
+     raisonnement, points forts, lacunes, examens manqués ou inutiles,
+     explication experte et conseils.
+   - La note, l'historique et les statistiques du profil sont mis à jour.
+   - Les consultations terminées alimentent le classement général.
+
+
+3. GENERATION DES CAS CLINIQUES
+-------------------------------
+Les cas ne sont pas simplement choisis au hasard. Le programme s'appuie sur
+une banque de pathologies et construit un plan de cas avant de demander sa
+rédaction à l'IA.
+
+Le choix tient compte de :
+  - la spécialité et la sous-spécialité demandées ;
+  - l'historique récent du même utilisateur afin d'éviter les répétitions ;
+  - l'utilisation globale des pathologies afin de mieux répartir les cas ;
+  - une progression de difficulté : davantage de cas faciles au début, puis
+    davantage de cas intermédiaires et difficiles avec l'expérience ;
+  - la cohérence médicale (âge, sexe, grossesse ou pathologies pédiatriques) ;
+  - un contexte africain et plusieurs angles de présentation.
+
+Le système contrôle aussi qu'un nouveau cas ne soit pas trop semblable aux
+cas récents. Dans certains cas, il peut volontairement proposer une pathologie
+proche pour un objectif pédagogique de diagnostic différentiel.
+
+
+4. JURY KYMIA
+-------------
+Le Jury est un concours clinique commun, distinct des consultations libres.
+
+  - Une édition est organisée chaque semaine sur une fenêtre de 72 heures.
+  - Tous les participants reçoivent le même cas.
+  - Chaque candidat a 45 minutes pour interroger le patient, demander des
+    investigations et rédiger sa copie.
+  - Le brouillon est sauvegardé automatiquement pendant l'épreuve.
+  - Lorsque le temps expire, la copie est soumise automatiquement si besoin.
+  - La correction IA donne une note sur 100, avec entre autres une note de
+    raisonnement, de qualité de rédaction et de pertinence des investigations.
+  - A la fermeture de l'édition, les résultats sont publiés. Le départage se
+    fait par note totale, puis raisonnement, qualité de copie, investigations
+    et enfin temps passé.
+  - Le gagnant reçoit un « Kymia Gold » et son historique de victoires est
+    conservé dans son profil.
+
+Un point d'entrée serveur « jury-tick » est prévu pour une exécution régulière
+(par un cron) : il prépare les sessions, ouvre le Jury, finalise les copies
+expirées et publie les résultats.
+
+
+5. ESPACES DE L'APPLICATION
+---------------------------
+  - Accueil connecté : résumé de la progression, accès rapide et classement.
+  - Spécialités / sous-spécialités : création des consultations simulées.
+  - Consultation : chat patient, prescriptions et rendu diagnostique.
+  - Rapport : correction complète d'une consultation terminée.
+  - Historique : consultations précédentes et résultats.
+  - Jury / historique Jury : concours en cours, copies et classements.
+  - Profil : informations personnelles, langue, statistiques et trophées.
+  - Premium : état de l'abonnement et informations d'accès.
+  - Administration : statistiques de la plateforme, recherche d'utilisateurs,
+    activation/suspension d'abonnements, suspension de comptes, suppression
+    d'utilisateurs et suivi de la diversité des cas générés.
+
+
+6. ARCHITECTURE TECHNIQUE
+-------------------------
+Interface :
+  - React 19 avec TypeScript.
+  - TanStack Start / TanStack Router pour les pages et les fonctions serveur.
+  - Tailwind CSS et composants Radix pour l'apparence.
+  - React Query pour la récupération et la mise à jour des données.
+
+Serveur et données :
+  - Supabase gère l'authentification, la base PostgreSQL, les règles d'accès
+    et les fonctions SQL.
+  - Les fonctions serveur valident l'utilisateur connecté avant les actions
+    sensibles et reçoivent son jeton d'authentification.
+  - Les données importantes sont stockées dans les tables : profiles,
+    consultations, subscriptions, user_roles, jury_sessions,
+    jury_participants, jury_submissions et case_registry.
+
+Intelligence artificielle :
+  - Les scénarios, réponses du patient, résultats d'examens et corrections
+    utilisent la passerelle IA Lovable avec le modèle configuré par défaut
+    (Google Gemini Flash Preview dans le code actuel).
+  - La clé IA et les clés Supabase sont attendues dans les variables
+    d'environnement ; elles ne doivent pas être mises dans le code client.
+
+
+7. SECURITE ET CONFIDENTIALITE
+------------------------------
+  - Les tables Supabase utilisent des règles RLS (Row Level Security) : un
+    utilisateur ne gère que ses propres consultations et données autorisées.
+  - Les rôles administrateur sont vérifiés côté serveur avant les opérations
+    d'administration.
+  - Le contenu caché d'un cas de Jury est protégé : il ne doit pas être envoyé
+    directement par l'API de données au navigateur.
+  - Il s'agit de patients fictifs et de simulations pédagogiques. Les réponses
+    de l'IA ne doivent pas être considérées comme une décision médicale réelle.
+
+
+8. DEMARRAGE LOCAL DU PROJET
+----------------------------
+Prérequis : Node.js et les variables d'environnement Supabase / Lovable.
+
+Commandes principales :
+  npm install      installe les dépendances
+  npm run dev      démarre l'application en développement
+  npm run build    produit la version de production
+  npm run lint     vérifie la qualité du code
+
+
+9. RESUME EN UNE PHRASE
+-----------------------
+Kymia est une plateforme de simulation clinique personnalisée : elle génère
+des patients virtuels variés, laisse l'apprenant raisonner comme en pratique,
+le corrige avec l'IA, mesure sa progression et propose un concours clinique
+hebdomadaire.
+
+
+10. EXPLICATION DETAILLEE DU BACKEND
+------------------------------------
+Le backend est la partie non visible par l'utilisateur. Il applique les règles
+métier, protège les données, appelle l'intelligence artificielle et enregistre
+les résultats. Dans ce projet, il est composé de TanStack Start côté serveur,
+Supabase et PostgreSQL.
+
+10.1. Authentification et identification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Supabase Auth gère la création de compte, la connexion par e-mail/mot de passe,
+la récupération de mot de passe et la connexion OAuth Google ou Apple.
+
+Lorsqu'un utilisateur appelle une fonction serveur, le navigateur ajoute son
+jeton Bearer Supabase. Le middleware « requireSupabaseAuth » vérifie ce jeton,
+contrôle sa validité et fournit ensuite deux informations au backend :
+  - userId : l'identifiant unique de l'utilisateur connecté ;
+  - supabase : un client Supabase limité aux droits de cet utilisateur.
+
+Une fonction sensible ne doit donc pas accepter aveuglément un identifiant
+fourni par le navigateur : elle utilise l'identifiant contenu dans le jeton.
+
+10.2. Fonctions serveur : l'API interne
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Le projet n'utilise pas un dossier traditionnel d'API REST séparé. Il emploie
+des « server functions » TanStack Start : ce sont des fonctions TypeScript
+appelées depuis les écrans, mais exécutées côté serveur.
+
+Exemples principaux (src/lib) :
+  - consultation.functions.ts : crée et pilote les consultations ;
+  - access.functions.ts : calcule les droits d'accès et les essais gratuits ;
+  - jury.functions.ts : organise le concours, les copies et les résultats ;
+  - admin.functions.ts : expose les actions réservées aux administrateurs ;
+  - case-selection.server.ts : sélectionne et diversifie les cas ;
+  - ai-gateway.server.ts : configure le fournisseur d'intelligence artificielle.
+
+Avant d'entrer dans la logique métier, ces fonctions valident généralement les
+entrées avec Zod (format, taille de texte, UUID, valeurs autorisées). Elles
+vérifient ensuite l'authentification, l'accès et la propriété des données.
+
+10.3. Contrôle des accès et abonnements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+La fonction computeAccess établit un seul statut fiable pour chaque utilisateur.
+Les statuts possibles sont : administrateur, abonnement actif, accès gratuit
+accordé, période d'essai, essai épuisé, abonnement suspendu/expiré ou compte
+suspendu.
+
+La règle est appliquée côté serveur avant de créer une consultation ou
+d'autoriser le Jury. Un utilisateur en essai peut effectuer deux consultations
+gratuites ; le compteur free_trial_used augmente lors de la création. Ainsi,
+modifier l'interface du navigateur ne suffit pas à contourner la limite.
+
+10.4. Base de données PostgreSQL via Supabase
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Les données persistantes sont stockées dans PostgreSQL. Les principales tables
+sont :
+  - profiles : identité publique, niveau, statistiques, essai gratuit,
+    suspension et récompenses ;
+  - user_roles : rôle utilisateur ou administrateur ;
+  - subscriptions : formule, état, échéance et notes administratives ;
+  - consultations : scénario caché, messages, examens, diagnostic, rapport,
+    score et état (en cours, pause, terminé) ;
+  - case_registry : historique des cas, utilisé pour éviter les répétitions ;
+  - jury_sessions : configuration et cas d'une édition du Jury ;
+  - jury_participants : inscription des candidats ;
+  - jury_submissions : brouillon, échanges, examens, copie finale et note.
+
+Des migrations SQL dans supabase/migrations décrivent l'évolution de cette
+base : création des tables, colonnes, index, triggers et fonctions SQL.
+
+10.5. RLS : protection au niveau de la base
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Supabase active la Row Level Security (RLS) sur les tables. Ces politiques SQL
+limitent les lignes accessibles selon auth.uid(), donc selon le compte connecté.
+Par exemple, un utilisateur peut gérer ses propres consultations, mais pas
+celles d'un autre utilisateur. Les administrateurs disposent de droits étendus
+après vérification de leur rôle.
+
+Certaines opérations doivent dépasser les droits ordinaires, par exemple
+publier le classement, supprimer un compte ou accéder au contenu caché d'un
+cas. Elles utilisent alors le client serveur « supabaseAdmin » et ne sont
+déclenchées qu'après contrôles côté serveur. La clé de service ne doit jamais
+être exposée dans le navigateur.
+
+10.6. Création d'une consultation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lors de la création d'une consultation, le backend suit cette séquence :
+  1. Vérifier l'utilisateur et son droit d'accès.
+  2. Incrémenter l'essai gratuit si nécessaire.
+  3. Construire un plan de cas diversifié (pathologie, difficulté, âge, sexe,
+     contexte, sous-spécialité et éléments à éviter).
+  4. Demander à l'IA de générer un scénario structuré au format JSON.
+  5. Contrôler que le cas n'est pas trop similaire à l'historique récent.
+  6. Sauvegarder les données du cas, dont le diagnostic caché, dans la table
+     consultations.
+  7. Retourner au navigateur uniquement les éléments utiles au démarrage, sans
+     révéler le diagnostic ou les réponses attendues.
+
+Les messages du patient et les demandes d'examens passent eux aussi par le
+backend, qui relit le cas caché puis interroge l'IA avec le bon contexte. Les
+échanges et résultats sont enregistrés après chaque action.
+
+10.7. Correction IA
+~~~~~~~~~~~~~~~~~~~
+Au moment de soumettre une consultation, le backend transmet à l'IA :
+  - les informations de référence du cas (diagnostic, physiopathologie,
+    examens et prise en charge attendus) ;
+  - l'historique des questions et réponses ;
+  - les examens demandés ;
+  - la réponse rédigée par l'utilisateur.
+
+L'IA doit renvoyer un JSON structuré de correction. Le serveur l'enregistre dans
+le rapport avec la note sur 100 et les sous-notes. Les statistiques du profil
+sont mises à jour afin d'alimenter l'historique et le classement.
+
+La clé LOVABLE_API_KEY est lue uniquement dans l'environnement serveur. Le
+module ai-gateway.server.ts configure l'accès à la passerelle Lovable et le
+modèle IA par défaut.
+
+10.8. Backend du Jury et tâche planifiée
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Le Jury possède un backend supplémentaire car il faut appliquer le même temps
+et les mêmes règles à tous les candidats. Lorsqu'un candidat commence :
+  - une soumission personnelle est créée avec une échéance de 45 minutes ;
+  - les brouillons, conversations et examens sont sauvegardés ;
+  - la soumission finale est corrigée par l'IA ;
+  - la durée et les sous-notes servent au classement final.
+
+La route POST /api/public/hooks/jury-tick est conçue pour être appelée chaque
+minute par un planificateur (cron). Elle crée/prépare les éditions, les ouvre
+à l'heure prévue, corrige automatiquement les copies en retard et publie les
+résultats lorsque l'édition est terminée.
+
+10.9. Gestion des erreurs
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Le point de départ serveur intercepte les erreurs inattendues de rendu ou de
+fonctions serveur. Il journalise l'erreur côté serveur et renvoie une page
+d'erreur HTML contrôlée, plutôt que des détails techniques au visiteur.
+
+10.10. Limite importante
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Le backend est adapté à un usage pédagogique, mais l'évaluation repose sur une
+IA générative. La réponse ou la note peut donc varier et doit être comprise
+comme un retour de formation, non comme une validation médicale officielle.

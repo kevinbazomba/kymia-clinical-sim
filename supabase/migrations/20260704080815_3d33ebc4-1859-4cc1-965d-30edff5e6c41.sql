@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS free_trial_used integer NOT NULL DEFAULT 0;

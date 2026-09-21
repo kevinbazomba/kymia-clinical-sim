@@ -1,0 +1,63 @@
+{
+  "meta": { "title": "Accueil — Kymia" },
+  "nav": {
+    "signOut": "Déconnexion",
+    "admin": "Admin",
+    "accueil": "Accueil",
+    "consulter": "Consulter",
+    "jury": "Jury",
+    "historique": "Historique",
+    "profil": "Profil"
+  },
+  "winnerBanner": {
+    "eyebrow": "🥇 Vainqueur du dernier Jury Kymia Gold",
+    "specialtyPrefix": "Spécialité : {specialty} · ",
+    "nextJury": "Prochain Jury"
+  },
+  "hero": {
+    "welcome": "Bienvenue",
+    "greeting": "Bonjour, ",
+    "defaultName": "Docteur",
+    "subtitle": "Prêt(e) pour votre prochaine consultation ? Choisissez une spécialité, l'IA génère un patient unique.",
+    "start": "Lancer une consultation",
+    "jurySpace": "Espace Jury",
+    "joinCommunity": "Rejoindre la communauté"
+  },
+  "stats": {
+    "consultations": "Consultations",
+    "passRate": "Taux de réussite",
+    "avgScore": "Score moyen",
+    "totalScore": "Score total"
+  },
+  "specialties": {
+    "title": "Vos spécialités",
+    "cases": "cas"
+  },
+  "leaderboard": {
+    "title": "Classement",
+    "anonymous": "Anonyme",
+    "points": "pts",
+    "empty": "Soyez le premier au classement."
+  },
+  "guide": {
+    "title": "Mode d'emploi",
+    "subtitle": "Prenez Kymia en main en 6 étapes simples.",
+    "steps": [
+      { "title": "Lancer une consultation", "desc": "Cliquez sur « Lancer une consultation », choisissez une spécialité — Kymia Motcho génère un patient unique." },
+      { "title": "Interroger & examiner", "desc": "Dialoguez librement avec le patient, prescrivez examen physique, biologie et imagerie selon vos hypothèses." },
+      { "title": "Pause & reprise", "desc": "Cliquez sur « Pause » à tout moment : votre cas est sauvegardé et se reprend à l'identique depuis l'historique." },
+      { "title": "Poser le diagnostic", "desc": "Remplissez la fiche : diagnostic principal, différentiels, arguments, conduite à tenir." },
+      { "title": "Correction & historique", "desc": "Consultez le rapport détaillé (score, cours de référence, PDF téléchargeable) depuis l'onglet Historique." },
+      { "title": "Participer au Jury", "desc": "Chaque semaine (Ven 00:00 → Dim 23:59 Kinshasa), affrontez tous les cliniciens sur le même cas — badge 🥇 Kymia Gold à la clé." }
+    ]
+  },
+  "rules": {
+    "title": "Règles de la simulation",
+    "items": [
+      "Le patient ne révèle **jamais** son diagnostic. Posez les bonnes questions.",
+      "Chaque examen demandé est restitué de façon réaliste, cohérente avec la pathologie cachée.",
+      "Vous pouvez mettre la consultation en **pause** et reprendre plus tard.",
+      "En fin de cas : score, examens oubliés, raisonnement attendu, physiopathologie complète."
+    ]
+  }
+}

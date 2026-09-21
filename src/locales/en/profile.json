@@ -1,0 +1,29 @@
+{
+  "meta": { "title": "Profile — Kymia" },
+  "header": {
+    "title": "My profile",
+    "subtitle": "Customize your public identity."
+  },
+  "form": {
+    "displayName": "Display name",
+    "level": "Level",
+    "country": "Country",
+    "countryPlaceholder": "France",
+    "save": "Save"
+  },
+  "toast": {
+    "updated": "Profile updated",
+    "error": "Error"
+  },
+  "stats": {
+    "consultations": "Consultations",
+    "totalScore": "Total score",
+    "kymiaGold": "🥇 Kymia Gold"
+  },
+  "goldHistory": {
+    "title": "Kymia Gold history",
+    "description": "Every Kymia Jury win is recorded here — the main badge is temporary until the next Jury.",
+    "specialtyFallback": "Specialty",
+    "empty": "No wins recorded yet. The next Jury awaits you!"
+  }
+}

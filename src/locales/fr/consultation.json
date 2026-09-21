@@ -1,0 +1,180 @@
+{
+  "specialties": {
+    "eyebrow": "Nouvelle consultation",
+    "title": "Choisissez une spécialité",
+    "subtitle": "L'IA génère un patient virtuel unique. Aucun cas ne se répète.",
+    "aiPreparing": "L'IA prépare le patient…",
+    "seeSubspecialties": "Voir les sous-spécialités →",
+    "start": "Commencer →"
+  },
+  "subspecialties": {
+    "title": "Choisissez une sous-spécialité",
+    "subtitle": "L'IA générera un cas propre à la sous-spécialité sélectionnée.",
+    "noSubspecialties": "Cette spécialité n'a pas de sous-spécialités.",
+    "backToSpecialties": "Retour aux spécialités",
+    "aiPreparingCase": "L'IA prépare le cas…",
+    "choose": "Choisir →",
+    "defaultSpecialtyLabel": "Médecine interne"
+  },
+  "subscription": {
+    "accountSuspended": {
+      "title": "Compte suspendu",
+      "body": "Votre compte est actuellement suspendu par l'administration. Contactez-nous pour plus d'informations."
+    },
+    "suspended": {
+      "title": "Abonnement suspendu",
+      "body": "Votre abonnement est actuellement suspendu. Pour retrouver un accès complet à KYMIA, veuillez renouveler votre abonnement."
+    },
+    "inactive": {
+      "title": "Abonnement inactif",
+      "body": "Renouvelez votre abonnement pour accéder aux consultations."
+    },
+    "later": "Plus tard",
+    "subscribeCta": "S'abonner",
+    "contactAdmin": "Contacter l'administration",
+    "reactivateMessage": "Bonjour, je souhaite réactiver mon abonnement KYMIA Premium."
+  },
+  "errors": {
+    "tooManyRequests": "Trop de requêtes IA. Réessayez dans un instant.",
+    "tooManyRequestsShort": "Trop de requêtes IA. Réessayez.",
+    "aiCreditsExhausted": "Crédits IA épuisés. Contactez l'administrateur.",
+    "aiCreditsExhaustedShort": "Crédits IA épuisés.",
+    "generic": "Erreur"
+  },
+  "cycleDialog": {
+    "title": "Choisissez votre niveau",
+    "premier": {
+      "title": "Premier cycle",
+      "description": "Bac 1 à Bac 3. Accompagné par {mentor}, votre mentor virtuel. Aucun impact sur le classement mondial."
+    },
+    "second": {
+      "title": "Second cycle",
+      "description": "M1, M2, M3, MS, Dr… Consultation autonome, évaluation stricte de Kymia Motcho. Compte pour le classement mondial."
+    }
+  },
+  "page": {
+    "title": "Consultation",
+    "patientFallback": "Patient",
+    "motif": "Motif",
+    "pause": "Pause",
+    "paused": "Mis en pause",
+    "diagnoseButton": "Poser le diagnostic",
+    "startPrompt": "Démarrez l'interrogatoire en posant votre première question.",
+    "you": "Vous · médecin",
+    "patient": "Patient",
+    "patientThinking": "Le patient réfléchit…",
+    "inputPlaceholder": "Posez votre question au patient…",
+    "seeReport": "Voir le rapport",
+    "investigations": {
+      "title": "Investigations",
+      "subtitle": "L'IA restitue un résultat cohérent.",
+      "tabClinical": "Clinique",
+      "tabBiology": "Bio",
+      "tabImaging": "Imagerie",
+      "resultReady": "Résultat disponible",
+      "customSearchLabel": "Recherche libre d'examen",
+      "customSearchPlaceholder": "Ex : Ponction lombaire, EMG, Échographie cardiaque…",
+      "customSearchButton": "Demander",
+      "customSearchHelp": "L'IA générera un résultat même si l'examen n'est pas dans la liste."
+    },
+    "mentor": {
+      "name": "Dr Mekah",
+      "subtitle": "Mentor · Premier cycle",
+      "empty": "Votre mentor va vous accompagner.",
+      "you": "Vous",
+      "thinking": "Dr Mekah réfléchit…",
+      "questionPlaceholder": "Une question précise pour votre mentor ? (facultatif)",
+      "askAdvice": "Demander un conseil",
+      "send": "Envoyer"
+    },
+    "diagnosisDialog": {
+      "title": "Votre diagnostic",
+      "mainLabel": "Diagnostic principal *",
+      "mainPlaceholder": "Ex : appendicite aiguë",
+      "differentialsLabel": "Diagnostics différentiels",
+      "differentialsPlaceholder": "Cholécystite, GEA...",
+      "argumentsForLabel": "Arguments en faveur",
+      "argumentsAgainstLabel": "Arguments contre",
+      "examsSupportingLabel": "Examens ayant permis le diagnostic",
+      "managementLabel": "Conduite à tenir & prise en charge",
+      "mainRequired": "Diagnostic principal requis",
+      "submit": "Soumettre et obtenir la correction"
+    }
+  },
+  "examResultsPanel": {
+    "title": "Résultats des investigations",
+    "help": "Tous les résultats restent disponibles durant toute la consultation. Faites défiler pour consulter la liste.",
+    "empty": "Aucun examen demandé pour l'instant.",
+    "categories": {
+      "physical": "Examen clinique",
+      "biology": "Biologie",
+      "imaging": "Imagerie",
+      "custom": "Autres explorations"
+    }
+  },
+  "history": {
+    "title": "Historique",
+    "subtitle": "Toutes vos consultations passées et en cours.",
+    "empty": "Aucune consultation pour l'instant.",
+    "cta": "Lancer ma première consultation →"
+  },
+  "report": {
+    "title": "Rapport pédagogique",
+    "realDiagnosis": "Diagnostic réel",
+    "yourDiagnosis": "Votre diagnostic",
+    "downloadPdf": "Télécharger PDF",
+    "unavailable": "Rapport indisponible.",
+    "backHistory": "← Historique",
+    "scores": {
+      "diagnosis": "Diagnostic",
+      "interrogation": "Interrogatoire",
+      "physicalExam": "Examen clinique",
+      "examRelevance": "Pertinence examens",
+      "reasoning": "Raisonnement"
+    },
+    "clinicalCase": {
+      "title": "Cas clinique",
+      "patient": "Patient",
+      "motif": "Motif",
+      "difficulty": "Difficulté"
+    },
+    "strengths": "Points forts",
+    "weaknesses": "À améliorer",
+    "missedQuestions": "Questions oubliées",
+    "missedExams": "Examens manqués",
+    "unnecessaryExams": "Examens inutiles",
+    "advice": "Conseils personnalisés",
+    "expertApproach": "Démarche d'un expert",
+    "fullExplanation": "Explication complète du cas",
+    "pathophysiology": "Physiopathologie",
+    "referenceCourse": {
+      "eyebrow": "Fiche de révision",
+      "title": "Cours de référence — {diagnosis}"
+    },
+    "detail": {
+      "title": "Détail de la consultation",
+      "interrogation": "Interrogatoire",
+      "doctor": "Médecin",
+      "patient": "Patient",
+      "examsAndResults": "Examens et résultats"
+    },
+    "actions": {
+      "newConsultation": "Nouvelle consultation",
+      "history": "Historique",
+      "downloadPdf": "Télécharger PDF"
+    },
+    "beginnerSummary": {
+      "eyebrow": "Mode débutant",
+      "title": "Bilan pédagogique du débutant",
+      "goodQuestions": "Bonnes questions posées",
+      "forgottenQuestions": "Questions oubliées",
+      "reasoningErrors": "Erreurs de raisonnement",
+      "goodExams": "Examens bien choisis",
+      "uselessExams": "Examens inutiles",
+      "semiologyToReview": "Sémiologie à revoir",
+      "acquiredSkills": "Compétences acquises",
+      "nextObjectives": "Prochains objectifs",
+      "davyMessageTitle": "Message du Dr Davy"
+    }
+  }
+}

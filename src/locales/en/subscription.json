@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "title": "Upgrade to Kymia Premium",
+    "description": "Unlimited access to clinical cases, AI feedback, leaderboard and Kymia Jury."
+  },
+  "backHome": "Back to home",
+  "hero": {
+    "title": "🚀 Take it to the next level with ",
+    "titleHighlight": "KYMIA Premium",
+    "subtitle": "You've used your **two free consultations**. Keep building your clinical reasoning with unlimited access to KYMIA's features."
+  },
+  "benefits": {
+    "title": "Everything Premium unlocks",
+    "items": [
+      "Unlimited clinical cases",
+      "All medical specialties",
+      "Kymia Motcho AI tutoring",
+      "Extremely detailed feedback",
+      "Downloadable PDF reports",
+      "Full history",
+      "Global leaderboard",
+      "Participation in the weekly Jury",
+      "Kymia Gold badge",
+      "Regular updates"
+    ]
+  },
+  "pricing": {
+    "offer": "Launch offer",
+    "currency": "USD",
+    "perMonth": " / month",
+    "perYear": " / year",
+    "monthlyNote": "Access to premium features for 30 days.",
+    "annualNote": "Access to premium features for 12 months.",
+    "description": "A modest investment for daily clinical training, AI-powered teaching and an active community.",
+    "subscribe": "💬 SUBSCRIBE",
+    "note": "Opens WhatsApp — an admin will reply directly."
+  },
+  "whatsappMessage": "Hello, I would like to subscribe to KYMIA Premium. My registration email is: {email}.",
+  "adminNotice": "🔑 You are an administrator: trial limits do not apply to your account.",
+  "install": {
+    "buttonLabelCompact": "Install",
+    "buttonLabelFull": "Install Kymia",
+    "toastInstalling": "Kymia is installing on your device…",
+    "toastPromptError": "Could not open the install prompt.",
+    "toastIos": "On iPhone/iPad: Share → \"Add to Home Screen\" to install Kymia.",
+    "toastGeneric": "Use your browser's menu, then \"Install app\".",
+    "dialog": {
+      "title": "Install Kymia on your device",
+      "description": "Access your consultations and the Kymia Jury from your home screen, like a real app — partial offline mode, no browser needed.",
+      "later": "Later",
+      "install": "Install",
+      "iosHint": "On iPhone/iPad: Share → \"Add to Home Screen\".",
+      "genericHint": "Use the browser menu, then \"Install\"."
+    }
+  }
+}
