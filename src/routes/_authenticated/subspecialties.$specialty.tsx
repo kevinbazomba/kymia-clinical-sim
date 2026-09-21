@@ -52,6 +52,9 @@ function SubspecialtiesPage() {
       navigate({ to: "/consultation/$id", params: { id } });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : t("consultation.errors.generic");
+      if (msg.includes("FREE_TRIAL_EXHAUSTED") || msg.includes("SUBSCRIPTION_EXPIRED")) {
+        navigate({ to: "/premium" }); return;
+      }
       if (msg.includes("SUBSCRIPTION_INACTIVE")) { setBlocked(true); setPending(null); return; }
       if (msg.includes("429")) toast.error(t("consultation.errors.tooManyRequestsShort"));
       else if (msg.includes("402")) toast.error(t("consultation.errors.aiCreditsExhaustedShort"));
