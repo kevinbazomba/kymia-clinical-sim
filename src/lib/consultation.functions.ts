@@ -65,6 +65,29 @@ function extractJson<T>(text: string): T {
   return JSON.parse(raw.slice(start, end + 1)) as T;
 }
 
+// AI-generated and legacy JSON can contain a single string instead of an
+// array. Normalize it before it is stored or interpolated into a prompt.
+function normalizeStringList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(normalizeStringList);
+  if (typeof value === "string") return value.trim() ? [value.trim()] : [];
+  if (typeof value === "number" || typeof value === "boolean") return [String(value)];
+  return [];
+}
+
+function listToText(value: unknown) {
+  return normalizeStringList(value).join(" ; ");
+}
+
+function normalizeCaseData(caseData: CaseData): CaseData {
+  return {
+    ...caseData,
+    key_history: normalizeStringList(caseData.key_history),
+    key_findings: normalizeStringList(caseData.key_findings),
+    expected_exams: normalizeStringList(caseData.expected_exams),
+    red_herrings: normalizeStringList(caseData.red_herrings),
+  };
+}
+
 // La rotation des sous-spécialités est gérée par @/lib/case-selection.server
 
 // Trial + Subscription gate — centralized in @/lib/access.functions.
@@ -147,7 +170,7 @@ Réponds STRICTEMENT en JSON valide selon ce schéma :
 
     async function generateCase(extra: string): Promise<CaseData> {
       const { text } = await generateText({ model, prompt: buildPrompt(extra), temperature: 1.0 });
-      return extractJson<CaseData>(text);
+      return normalizeCaseData(extractJson<CaseData>(text));
     }
 
     let caseData = await generateCase("");
@@ -266,8 +289,8 @@ TON RÔLE :
 CONTEXTE CACHÉ (à NE PAS révéler à l'étudiant) :
 - Diagnostic réel : ${cd.hidden_diagnosis}
 - Physiopathologie : ${cd.hidden_pathophysiology}
-- Signes clés attendus : ${cd.key_findings.join(" ; ")}
-- Examens utiles : ${cd.expected_exams.join(" ; ")}
+- Signes clés attendus : ${listToText(cd.key_findings)}
+- Examens utiles : ${listToText(cd.expected_exams)}
 
 INTERROGATOIRE ACTUEL :
 ${transcript || "(aucune question posée)"}
@@ -352,8 +375,8 @@ export const sendPatientMessage = createServerFn({ method: "POST" })
 Identité : ${cd.patient.name}, ${cd.patient.age} ans, ${cd.patient.sex === "M" ? "homme" : "femme"}${cd.patient.profession ? `, ${cd.patient.profession}` : ""}.
 Diagnostic réel (CACHÉ) : ${cd.hidden_diagnosis}
 Physiopathologie cachée : ${cd.hidden_pathophysiology}
-Histoire clinique : ${cd.key_history.join(" ; ")}
-Signes cliniques : ${cd.key_findings.join(" ; ")}
+Histoire clinique : ${listToText(cd.key_history)}
+Signes cliniques : ${listToText(cd.key_findings)}
 
 RÈGLES :
 - Parle comme un vrai patient, français naturel, parfois imprécis.
@@ -409,7 +432,7 @@ Contexte CACHÉ du patient :
 - Diagnostic réel : ${cd.hidden_diagnosis}
 - Physiopathologie : ${cd.hidden_pathophysiology}
 - Patient : ${cd.patient.sex}, ${cd.patient.age} ans
-- Signes attendus : ${cd.key_findings.join(" ; ")}
+- Signes attendus : ${listToText(cd.key_findings)}
 
 Examen demandé (${categoryLabel}) : ${data.name}
 
@@ -478,8 +501,8 @@ export const submitDiagnosis = createServerFn({ method: "POST" })
 CAS RÉEL :
 - Diagnostic : ${cd.hidden_diagnosis}
 - Physiopathologie : ${cd.hidden_pathophysiology}
-- Signes attendus : ${cd.key_findings.join(" ; ")}
-- Examens vraiment utiles : ${cd.expected_exams.join(" ; ")}
+- Signes attendus : ${listToText(cd.key_findings)}
+- Examens vraiment utiles : ${listToText(cd.expected_exams)}
 - Difficulté : ${cd.difficulty}
 
 TRANSCRIPT :
