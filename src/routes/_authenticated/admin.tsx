@@ -35,8 +35,8 @@ function AdminLayout() {
 
   return (
     <div className="-mx-4 -my-6 min-h-[calc(100vh-8rem)] bg-slate-950 text-slate-100">
-      <header className="sticky top-16 z-20 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:top-14">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+      <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:px-4">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/20 text-primary">
               <ShieldCheck className="h-5 w-5" />
@@ -57,14 +57,14 @@ function AdminLayout() {
             </Button>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-6xl gap-1 px-4 pb-2 text-sm">
+        <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 pb-2 text-sm sm:px-4">
           <AdminLink to="/admin" icon={<LayoutDashboard className="h-4 w-4" />}>Tableau de bord</AdminLink>
           <AdminLink to="/admin/users" icon={<Users className="h-4 w-4" />}>Utilisateurs & abonnements</AdminLink>
           <AdminLink to="/admin/diversity" icon={<Shuffle className="h-4 w-4" />}>Diversité des cas</AdminLink>
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
         <Outlet />
       </main>
     </div>

@@ -23,6 +23,7 @@ import { Route as AuthenticatedJuryRouteImport } from './routes/_authenticated/j
 import { Route as AuthenticatedJuryHistoryRouteImport } from './routes/_authenticated/jury-history'
 import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedSalleDeGardeRouteImport } from './routes/_authenticated/salle-de-garde'
 import { Route as AuthenticatedSpecialtiesRouteImport } from './routes/_authenticated/specialties'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -31,7 +32,9 @@ import { Route as AuthenticatedAdminDiversityRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedConsultationIdRouteImport } from './routes/_authenticated/consultation.$id'
 import { Route as AuthenticatedReportIdRouteImport } from './routes/_authenticated/report.$id'
+import { Route as AuthenticatedSalleDeGardeSpecialtyRouteImport } from './routes/_authenticated/salle-de-garde.$specialty'
 import { Route as AuthenticatedSubspecialtiesSpecialtyRouteImport } from './routes/_authenticated/subspecialties.$specialty'
+import { Route as AuthenticatedSalleDeGardeDiscussionIdRouteImport } from './routes/_authenticated/salle-de-garde.discussion.$id'
 import { Route as ApiPublicHooksJuryTickRouteImport } from './routes/api/public/hooks/jury-tick'
 
 const IndexRoute = IndexRouteImport.update({
@@ -106,6 +109,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSalleDeGardeRoute =
+  AuthenticatedSalleDeGardeRouteImport.update({
+    id: '/salle-de-garde',
+    path: '/salle-de-garde',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSpecialtiesRoute =
   AuthenticatedSpecialtiesRouteImport.update({
     id: '/specialties',
@@ -150,11 +159,23 @@ const AuthenticatedReportIdRoute = AuthenticatedReportIdRouteImport.update({
   path: '/report/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSalleDeGardeSpecialtyRoute =
+  AuthenticatedSalleDeGardeSpecialtyRouteImport.update({
+    id: '/$specialty',
+    path: '/$specialty',
+    getParentRoute: () => AuthenticatedSalleDeGardeRoute,
+  } as any)
 const AuthenticatedSubspecialtiesSpecialtyRoute =
   AuthenticatedSubspecialtiesSpecialtyRouteImport.update({
     id: '/subspecialties/$specialty',
     path: '/subspecialties/$specialty',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSalleDeGardeDiscussionIdRoute =
+  AuthenticatedSalleDeGardeDiscussionIdRouteImport.update({
+    id: '/discussion/$id',
+    path: '/discussion/$id',
+    getParentRoute: () => AuthenticatedSalleDeGardeRoute,
   } as any)
 const ApiPublicHooksJuryTickRoute = ApiPublicHooksJuryTickRouteImport.update({
   id: '/api/public/hooks/jury-tick',
@@ -176,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/jury-history': typeof AuthenticatedJuryHistoryRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/specialties': typeof AuthenticatedSpecialtiesRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -183,8 +205,10 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/consultation/$id': typeof AuthenticatedConsultationIdRoute
   '/report/$id': typeof AuthenticatedReportIdRoute
+  '/salle-de-garde/$specialty': typeof AuthenticatedSalleDeGardeSpecialtyRoute
   '/subspecialties/$specialty': typeof AuthenticatedSubspecialtiesSpecialtyRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/salle-de-garde/discussion/$id': typeof AuthenticatedSalleDeGardeDiscussionIdRoute
   '/api/public/hooks/jury-tick': typeof ApiPublicHooksJuryTickRoute
 }
 export interface FileRoutesByTo {
@@ -200,6 +224,7 @@ export interface FileRoutesByTo {
   '/jury-history': typeof AuthenticatedJuryHistoryRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/specialties': typeof AuthenticatedSpecialtiesRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -207,8 +232,10 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/consultation/$id': typeof AuthenticatedConsultationIdRoute
   '/report/$id': typeof AuthenticatedReportIdRoute
+  '/salle-de-garde/$specialty': typeof AuthenticatedSalleDeGardeSpecialtyRoute
   '/subspecialties/$specialty': typeof AuthenticatedSubspecialtiesSpecialtyRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/salle-de-garde/discussion/$id': typeof AuthenticatedSalleDeGardeDiscussionIdRoute
   '/api/public/hooks/jury-tick': typeof ApiPublicHooksJuryTickRoute
 }
 export interface FileRoutesById {
@@ -227,6 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/jury-history': typeof AuthenticatedJuryHistoryRoute
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/_authenticated/specialties': typeof AuthenticatedSpecialtiesRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -234,8 +262,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/consultation/$id': typeof AuthenticatedConsultationIdRoute
   '/_authenticated/report/$id': typeof AuthenticatedReportIdRoute
+  '/_authenticated/salle-de-garde/$specialty': typeof AuthenticatedSalleDeGardeSpecialtyRoute
   '/_authenticated/subspecialties/$specialty': typeof AuthenticatedSubspecialtiesSpecialtyRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/salle-de-garde/discussion/$id': typeof AuthenticatedSalleDeGardeDiscussionIdRoute
   '/api/public/hooks/jury-tick': typeof ApiPublicHooksJuryTickRoute
 }
 export interface FileRouteTypes {
@@ -254,6 +284,7 @@ export interface FileRouteTypes {
     | '/jury-history'
     | '/premium'
     | '/profile'
+    | '/salle-de-garde'
     | '/specialties'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -261,8 +292,10 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/consultation/$id'
     | '/report/$id'
+    | '/salle-de-garde/$specialty'
     | '/subspecialties/$specialty'
     | '/admin/'
+    | '/salle-de-garde/discussion/$id'
     | '/api/public/hooks/jury-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -278,6 +311,7 @@ export interface FileRouteTypes {
     | '/jury-history'
     | '/premium'
     | '/profile'
+    | '/salle-de-garde'
     | '/specialties'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -285,8 +319,10 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/consultation/$id'
     | '/report/$id'
+    | '/salle-de-garde/$specialty'
     | '/subspecialties/$specialty'
     | '/admin'
+    | '/salle-de-garde/discussion/$id'
     | '/api/public/hooks/jury-tick'
   id:
     | '__root__'
@@ -304,6 +340,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jury-history'
     | '/_authenticated/premium'
     | '/_authenticated/profile'
+    | '/_authenticated/salle-de-garde'
     | '/_authenticated/specialties'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -311,8 +348,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/_authenticated/consultation/$id'
     | '/_authenticated/report/$id'
+    | '/_authenticated/salle-de-garde/$specialty'
     | '/_authenticated/subspecialties/$specialty'
     | '/_authenticated/admin/'
+    | '/_authenticated/salle-de-garde/discussion/$id'
     | '/api/public/hooks/jury-tick'
   fileRoutesById: FileRoutesById
 }
@@ -429,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/salle-de-garde': {
+      id: '/_authenticated/salle-de-garde'
+      path: '/salle-de-garde'
+      fullPath: '/salle-de-garde'
+      preLoaderRoute: typeof AuthenticatedSalleDeGardeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/specialties': {
       id: '/_authenticated/specialties'
       path: '/specialties'
@@ -485,12 +531,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/salle-de-garde/$specialty': {
+      id: '/_authenticated/salle-de-garde/$specialty'
+      path: '/$specialty'
+      fullPath: '/salle-de-garde/$specialty'
+      preLoaderRoute: typeof AuthenticatedSalleDeGardeSpecialtyRouteImport
+      parentRoute: typeof AuthenticatedSalleDeGardeRoute
+    }
     '/_authenticated/subspecialties/$specialty': {
       id: '/_authenticated/subspecialties/$specialty'
       path: '/subspecialties/$specialty'
       fullPath: '/subspecialties/$specialty'
       preLoaderRoute: typeof AuthenticatedSubspecialtiesSpecialtyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/salle-de-garde/discussion/$id': {
+      id: '/_authenticated/salle-de-garde/discussion/$id'
+      path: '/discussion/$id'
+      fullPath: '/salle-de-garde/discussion/$id'
+      preLoaderRoute: typeof AuthenticatedSalleDeGardeDiscussionIdRouteImport
+      parentRoute: typeof AuthenticatedSalleDeGardeRoute
     }
     '/api/public/hooks/jury-tick': {
       id: '/api/public/hooks/jury-tick'
@@ -517,6 +577,24 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedSalleDeGardeRouteChildren {
+  AuthenticatedSalleDeGardeSpecialtyRoute: typeof AuthenticatedSalleDeGardeSpecialtyRoute
+  AuthenticatedSalleDeGardeDiscussionIdRoute: typeof AuthenticatedSalleDeGardeDiscussionIdRoute
+}
+
+const AuthenticatedSalleDeGardeRouteChildren: AuthenticatedSalleDeGardeRouteChildren =
+  {
+    AuthenticatedSalleDeGardeSpecialtyRoute:
+      AuthenticatedSalleDeGardeSpecialtyRoute,
+    AuthenticatedSalleDeGardeDiscussionIdRoute:
+      AuthenticatedSalleDeGardeDiscussionIdRoute,
+  }
+
+const AuthenticatedSalleDeGardeRouteWithChildren =
+  AuthenticatedSalleDeGardeRoute._addFileChildren(
+    AuthenticatedSalleDeGardeRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
@@ -525,6 +603,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJuryHistoryRoute: typeof AuthenticatedJuryHistoryRoute
   AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSalleDeGardeRoute: typeof AuthenticatedSalleDeGardeRouteWithChildren
   AuthenticatedSpecialtiesRoute: typeof AuthenticatedSpecialtiesRoute
   AuthenticatedConsultationIdRoute: typeof AuthenticatedConsultationIdRoute
   AuthenticatedReportIdRoute: typeof AuthenticatedReportIdRoute
@@ -539,6 +618,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJuryHistoryRoute: AuthenticatedJuryHistoryRoute,
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSalleDeGardeRoute: AuthenticatedSalleDeGardeRouteWithChildren,
   AuthenticatedSpecialtiesRoute: AuthenticatedSpecialtiesRoute,
   AuthenticatedConsultationIdRoute: AuthenticatedConsultationIdRoute,
   AuthenticatedReportIdRoute: AuthenticatedReportIdRoute,
@@ -565,13 +645,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

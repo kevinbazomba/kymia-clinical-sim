@@ -68,12 +68,12 @@ function AuthLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/40">
       <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:px-4">
           <Link to="/home" className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-[image:var(--gradient-primary)] text-primary-foreground">
               <Activity className="h-4 w-4" strokeWidth={2.5} />
             </div>
-            <span className="font-serif text-xl font-semibold">Kymia</span>
+            <span className="font-serif text-lg font-semibold sm:text-xl">Kymia</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             <NavLink to="/home" icon={<Home className="h-4 w-4" />}>{t("common.nav.home")}</NavLink>
@@ -90,7 +90,7 @@ function AuthLayout() {
               </Link>
             )}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <InstallButton compact />
             <div className="hidden h-8 w-8 place-items-center rounded-full bg-secondary text-sm font-semibold text-primary md:grid">
               {initial}
@@ -101,7 +101,7 @@ function AuthLayout() {
           </div>
         </div>
         {/* mobile nav */}
-        <nav className="flex items-center justify-around border-t bg-background px-2 py-2 md:hidden">
+        <nav className="flex items-stretch justify-around gap-0.5 overflow-x-auto border-t bg-background px-1 py-1.5 md:hidden">
           <MobileNavLink to="/home" icon={<Home className="h-4 w-4" />} label={t("common.nav.home")} />
           <MobileNavLink to="/specialties" icon={<PlayCircle className="h-4 w-4" />} label={t("common.nav.consult")} />
           <MobileNavLink to="/salle-de-garde" icon={<Stethoscope className="h-4 w-4" />} label="Salle de garde" />
@@ -110,7 +110,7 @@ function AuthLayout() {
         </nav>
 
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
         <Suspense fallback={<GenericPageSkeleton />}>
           <Outlet />
         </Suspense>
@@ -137,10 +137,10 @@ function MobileNavLink({ to, icon, label }: { to: string; icon: React.ReactNode;
   return (
     <Link
       to={to}
-      className="flex flex-col items-center gap-0.5 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground"
+      className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-md px-1 py-1 text-[10px] font-medium text-muted-foreground sm:px-2"
       activeProps={{ className: "text-primary" }}
     >
-      {icon}<span>{label}</span>
+      {icon}<span className="max-w-full truncate">{label}</span>
     </Link>
   );
 }

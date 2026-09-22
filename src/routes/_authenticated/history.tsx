@@ -23,7 +23,7 @@ function HistoryPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-serif text-4xl text-foreground">{t("consultation.history.title")}</h1>
+        <h1 className="font-serif text-3xl text-foreground sm:text-4xl">{t("consultation.history.title")}</h1>
         <p className="text-muted-foreground">{t("consultation.history.subtitle")}</p>
       </header>
 
@@ -46,18 +46,18 @@ function HistoryPage() {
                 key={c.id}
                 to={target}
                 params={{ id: c.id }}
-                className="flex items-center justify-between rounded-xl border bg-card p-4 shadow-[var(--shadow-soft)] transition hover:shadow-[var(--shadow-card)]"
+                className="flex flex-col items-start gap-3 rounded-xl border bg-card p-4 shadow-[var(--shadow-soft)] transition hover:shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-center gap-4">
+                <div className="min-w-0 flex items-center gap-3 sm:gap-4">
                   <StatusIcon status={c.status} />
                   <div>
                     <p className="font-semibold text-foreground">{spec ? specialtyLabel(spec.id, lang) : c.specialty}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="truncate text-xs text-muted-foreground">
                       {c.patient_label} · {c.chief_complaint}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
                   {c.score != null && <Badge variant="secondary">{c.score}/100</Badge>}
                   <span className="text-xs text-muted-foreground">
                     {new Date(c.created_at).toLocaleDateString(lang === "en" ? "en-US" : "fr-FR")}

@@ -150,10 +150,10 @@ function ConsultationPage() {
         onRetry={() => submittedDiagnosis && startSubmission(submittedDiagnosis)}
         onReturn={() => setSubmissionError(null)}
       />
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       {/* Chat panel */}
       <section className="flex flex-col rounded-2xl border bg-card shadow-[var(--shadow-card)] min-h-[70vh]">
-        <header className="flex items-center justify-between border-b px-5 py-4">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5 sm:py-4">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-primary">
               <UserIcon className="h-5 w-5" />
@@ -165,7 +165,7 @@ function ConsultationPage() {
               <p className="text-xs text-muted-foreground">{spec ? specialtyLabel(spec.id, lang) : ""} · {t("consultation.page.motif")} : {caseData?.chief_complaint}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
             {!isCompleted && (
               <Button variant="outline" size="sm" onClick={async () => { await pause({ data: { id } }); toast.success(t("consultation.page.paused")); navigate({ to: "/history" }); }}>
                 <Pause className="mr-1 h-4 w-4" /> {t("consultation.page.pause")}
@@ -225,7 +225,7 @@ function ConsultationPage() {
           <p className="text-xs text-muted-foreground">{t("consultation.page.investigations.subtitle")}</p>
 
           <Tabs defaultValue="physical" className="mt-3">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-3 text-xs sm:text-sm">
               <TabsTrigger value="physical"><Stethoscope className="mr-1 h-3 w-3" />{t("consultation.page.investigations.tabClinical")}</TabsTrigger>
               <TabsTrigger value="biology"><FlaskConical className="mr-1 h-3 w-3" />{t("consultation.page.investigations.tabBiology")}</TabsTrigger>
               <TabsTrigger value="imaging"><ScanLine className="mr-1 h-3 w-3" />{t("consultation.page.investigations.tabImaging")}</TabsTrigger>

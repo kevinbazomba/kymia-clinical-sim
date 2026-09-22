@@ -89,12 +89,12 @@ function ReportPage() {
         }
       `}</style>
 
-      <header className="relative overflow-hidden rounded-3xl border bg-card p-8 shadow-[var(--shadow-card)]">
+      <header className="relative overflow-hidden rounded-3xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-8">
         <div className="absolute inset-0 -z-10 bg-[image:var(--gradient-hero)] opacity-60 print:hidden" />
         <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-wider text-primary">{spec?.label}</p>
-            <h1 className="mt-2 font-serif text-4xl">Rapport pédagogique</h1>
+            <h1 className="mt-2 font-serif text-3xl sm:text-4xl">Rapport pédagogique</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               Diagnostic réel : <strong className="text-foreground">{cd?.hidden_diagnosis ?? "—"}</strong>
             </p>
@@ -102,7 +102,7 @@ function ReportPage() {
           </div>
           <div className="text-center">
             <Trophy className="mx-auto h-8 w-8 text-gold" />
-            <p className="mt-2 font-serif text-6xl text-primary">{r.score}<span className="text-2xl text-muted-foreground">/100</span></p>
+            <p className="mt-2 font-serif text-5xl text-primary sm:text-6xl">{r.score}<span className="text-xl text-muted-foreground sm:text-2xl">/100</span></p>
             <Button size="sm" variant="outline" className="mt-3 no-print" onClick={() => window.print()}>
               <Download className="mr-1 h-4 w-4" /> Télécharger PDF
             </Button>
@@ -110,7 +110,7 @@ function ReportPage() {
         </div>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-5">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {[
           { l: "Diagnostic", v: r.diagnostic_accuracy },
           { l: "Interrogatoire", v: r.interrogation_quality },
