@@ -27,7 +27,7 @@ export interface ChatMessage { role: "user" | "assistant"; content: string; ts: 
 export interface ExamRecord { category: string; name: string; result: string; ts: number; }
 export interface Diagnosis {
   main: string; differentials: string; arguments_for: string;
-  arguments_against: string; exams_supporting: string; management: string;
+  exams_supporting: string; management: string;
 }
 export interface Report {
   score: number;
@@ -471,7 +471,6 @@ export const submitDiagnosis = createServerFn({ method: "POST" })
         main: z.string().min(2).max(500),
         differentials: z.string().max(2000),
         arguments_for: z.string().max(2000),
-        arguments_against: z.string().max(2000),
         exams_supporting: z.string().max(2000),
         management: z.string().max(3000),
       }),
@@ -520,9 +519,8 @@ ${examsList || "(aucun)"}
 DIAGNOSTIC POSÉ :
 - Principal : ${data.diagnosis.main}
 - Différentiels : ${data.diagnosis.differentials}
-- Arguments pour : ${data.diagnosis.arguments_for}
-- Arguments contre : ${data.diagnosis.arguments_against}
-- Examens diagnostiques : ${data.diagnosis.exams_supporting}
+- Arguments cliniques en faveur : ${data.diagnosis.arguments_for}
+- Arguments paracliniques en faveur : ${data.diagnosis.exams_supporting}
 - Prise en charge : ${data.diagnosis.management}
 
 BARÈME STRICT (à respecter absolument) :

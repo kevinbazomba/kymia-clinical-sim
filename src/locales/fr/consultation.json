@@ -93,9 +93,8 @@
       "mainPlaceholder": "Ex : appendicite aiguë",
       "differentialsLabel": "Diagnostics différentiels",
       "differentialsPlaceholder": "Cholécystite, GEA...",
-      "argumentsForLabel": "Arguments en faveur",
-      "argumentsAgainstLabel": "Arguments contre",
-      "examsSupportingLabel": "Examens ayant permis le diagnostic",
+      "argumentsForLabel": "Arguments cliniques en faveur",
+      "examsSupportingLabel": "Arguments paracliniques en faveur",
       "managementLabel": "Conduite à tenir & prise en charge",
       "mainRequired": "Diagnostic principal requis",
       "submit": "Soumettre et obtenir la correction"

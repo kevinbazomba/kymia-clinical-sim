@@ -93,9 +93,8 @@
       "mainPlaceholder": "E.g. acute appendicitis",
       "differentialsLabel": "Differential diagnoses",
       "differentialsPlaceholder": "Cholecystitis, gastroenteritis...",
-      "argumentsForLabel": "Arguments in favor",
-      "argumentsAgainstLabel": "Arguments against",
-      "examsSupportingLabel": "Exams that supported the diagnosis",
+      "argumentsForLabel": "Clinical arguments in favor",
+      "examsSupportingLabel": "Paraclinical arguments in favor",
       "managementLabel": "Management plan",
       "mainRequired": "Main diagnosis is required",
       "submit": "Submit and get feedback"

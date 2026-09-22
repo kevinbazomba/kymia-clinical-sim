@@ -85,7 +85,7 @@ function ConsultationPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : t("consultation.errors.generic")),
   });
 
-  type DiagT = { main: string; differentials: string; arguments_for: string; arguments_against: string; exams_supporting: string; management: string };
+  type DiagT = { main: string; differentials: string; arguments_for: string; exams_supporting: string; management: string };
   const submitMut = useMutation({
     mutationFn: async (diag: DiagT) => submit({ data: { id, diagnosis: diag } }),
     onSuccess: () => {
@@ -446,20 +446,19 @@ function DiagnosisDialog({
   disabled, onSubmit, loading,
 }: {
   disabled: boolean;
-  onSubmit: (d: { main: string; differentials: string; arguments_for: string; arguments_against: string; exams_supporting: string; management: string }) => void;
+  onSubmit: (d: { main: string; differentials: string; arguments_for: string; exams_supporting: string; management: string }) => void;
   loading: boolean;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    main: "", differentials: "", arguments_for: "", arguments_against: "", exams_supporting: "", management: "",
+    main: "", differentials: "", arguments_for: "", exams_supporting: "", management: "",
   });
 
   const fields = [
     { k: "main", label: t("consultation.page.diagnosisDialog.mainLabel"), placeholder: t("consultation.page.diagnosisDialog.mainPlaceholder") },
     { k: "differentials", label: t("consultation.page.diagnosisDialog.differentialsLabel"), placeholder: t("consultation.page.diagnosisDialog.differentialsPlaceholder") },
     { k: "arguments_for", label: t("consultation.page.diagnosisDialog.argumentsForLabel") },
-    { k: "arguments_against", label: t("consultation.page.diagnosisDialog.argumentsAgainstLabel") },
     { k: "exams_supporting", label: t("consultation.page.diagnosisDialog.examsSupportingLabel") },
     { k: "management", label: t("consultation.page.diagnosisDialog.managementLabel") },
   ];
