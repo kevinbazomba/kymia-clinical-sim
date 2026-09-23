@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { ExamResultsPanel } from "@/components/ExamResultsPanel";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
+import { playNotificationSound } from "@/lib/notification-sounds";
 
 export const Route = createFileRoute("/_authenticated/consultation/$id")({
   head: () => {
@@ -72,7 +73,10 @@ function ConsultationPage() {
 
   const sendMut = useMutation({
     mutationFn: async (message: string) => sendMsg({ data: { id, message } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["consultation", id] }),
+    onSuccess: () => {
+      playNotificationSound("patient");
+      qc.invalidateQueries({ queryKey: ["consultation", id] });
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : t("consultation.errors.generic")),
   });
 
@@ -80,6 +84,7 @@ function ConsultationPage() {
     mutationFn: async (v: { category: "physical" | "biology" | "imaging" | "custom"; name: string }) =>
       reqExam({ data: { id, ...v } }),
     onSuccess: () => {
+      playNotificationSound("exam");
       qc.invalidateQueries({ queryKey: ["consultation", id] });
       toast.success(t("consultation.page.investigations.resultReady"));
     },
@@ -90,6 +95,7 @@ function ConsultationPage() {
   const submitMut = useMutation({
     mutationFn: async (diag: DiagT) => submit({ data: { id, diagnosis: diag } }),
     onSuccess: (result) => {
+      playNotificationSound(result.report.score >= 70 ? "success" : "encouragement");
       setCorrectionReady(true);
       if (result.pedagogical_reminder) {
         setShowPedagogicalCoach(true);
