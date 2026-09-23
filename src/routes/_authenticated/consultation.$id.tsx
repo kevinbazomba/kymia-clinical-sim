@@ -64,6 +64,7 @@ function ConsultationPage() {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [correctionReady, setCorrectionReady] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [showPedagogicalCoach, setShowPedagogicalCoach] = useState(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -88,9 +89,13 @@ function ConsultationPage() {
   type DiagT = { main: string; differentials: string; arguments_for: string; exams_supporting: string; management: string };
   const submitMut = useMutation({
     mutationFn: async (diag: DiagT) => submit({ data: { id, diagnosis: diag } }),
-    onSuccess: () => {
+    onSuccess: (result) => {
       setCorrectionReady(true);
-      window.setTimeout(() => navigate({ to: "/report/$id", params: { id } }), 700);
+      if (result.pedagogical_reminder) {
+        setShowPedagogicalCoach(true);
+      } else {
+        window.setTimeout(() => navigate({ to: "/report/$id", params: { id } }), 700);
+      }
     },
     onError: (e) => setSubmissionError(e instanceof Error ? e.message : t("consultation.errors.generic")),
   });
@@ -149,6 +154,13 @@ function ConsultationPage() {
         message={CORRECTION_LOADING_MESSAGES[loadingMessageIndex]}
         onRetry={() => submittedDiagnosis && startSubmission(submittedDiagnosis)}
         onReturn={() => setSubmissionError(null)}
+      />
+      <PedagogicalCoachDialog
+        open={showPedagogicalCoach}
+        onContinue={() => {
+          setShowPedagogicalCoach(false);
+          navigate({ to: "/report/$id", params: { id } });
+        }}
       />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       {/* Chat panel */}
@@ -438,6 +450,47 @@ function CustomExamSearch({ disabled, onSubmit }: { disabled: boolean; onSubmit:
       </div>
       <p className="mt-1 text-[10px] text-muted-foreground">{t("consultation.page.investigations.customSearchHelp")}</p>
     </form>
+  );
+}
+
+const REVISION_RESOURCE_URL = "https://draworfit.mychariow.com/prd_58zuymo2";
+
+function PedagogicalCoachDialog({ open, onContinue }: { open: boolean; onContinue: () => void }) {
+  const [reviewOpen, setReviewOpen] = useState(false);
+  return (
+    <>
+      <Dialog open={open} onOpenChange={(next) => { if (!next) onContinue(); }}>
+        <DialogContent className="max-h-[92vh] max-w-xl overflow-y-auto rounded-3xl border-primary/20 bg-card p-0 shadow-[var(--shadow-elegant)]">
+          <div className="relative overflow-hidden p-5 sm:p-7">
+            <div className="absolute inset-x-0 top-0 h-28 bg-[image:var(--gradient-hero)] opacity-70" />
+            <div className="relative">
+              <div className="flex items-center gap-3">
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-[var(--shadow-elegant)]"><Stethoscope className="h-7 w-7" /></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Docteur Kymia</p><DialogTitle className="mt-1 font-serif text-2xl">Un moment pour mieux progresser</DialogTitle></div>
+              </div>
+              <div className="mt-5 space-y-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+                <p className="font-medium text-foreground">Bravo pour ton engagement ! 👏</p>
+                <p>L’objectif de Kymia n’est pas de multiplier les consultations, mais de progresser après chacune d’elles.</p>
+                <p>Une consultation est utile lorsqu’elle t’aide à identifier tes lacunes, comprendre tes erreurs et revenir mieux préparé.</p>
+                <p>Prends quelques minutes pour réviser les notions qui te posent problème, puis reviens mettre tes connaissances à l’épreuve.</p>
+                <p className="rounded-xl bg-secondary/70 p-3 text-center font-medium text-foreground">Consulter → comprendre ses erreurs → réviser → revenir plus fort. 🩺📚</p>
+              </div>
+              <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                <Button variant="outline" className="h-11 border-primary/30" onClick={() => setReviewOpen(true)}><GraduationCap className="mr-2 h-4 w-4" />Aller réviser</Button>
+                <Button className="h-11" onClick={onContinue}>Poursuivre la consultation <Sparkles className="ml-2 h-4 w-4" /></Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="flex h-[88vh] max-w-5xl flex-col rounded-2xl p-4 sm:p-6">
+          <DialogHeader><DialogTitle className="font-serif text-xl">Révision avec le Docteur Kymia</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">Votre ressource s’ouvre ici ; fermez ce panneau pour revenir à Kymia.</p>
+          <iframe title="Ressource de révision Kymia" src={REVISION_RESOURCE_URL} className="min-h-0 w-full flex-1 rounded-xl border bg-white" />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

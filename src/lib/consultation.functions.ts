@@ -580,7 +580,14 @@ Réponds STRICTEMENT en JSON valide :
       }).eq("id", context.userId);
     }
 
-    return { report, cycle };
+    // Advisory coaching only: this does not alter access or the completed report.
+    // Supabase records the display decision so the same consultation never repeats it.
+    const { data: pedagogicalReminder, error: reminderError } = await context.supabase.rpc(
+      "should_show_pedagogical_reminder" as never,
+      { _consultation_id: data.id } as never,
+    );
+    if (reminderError) console.error("Unable to evaluate pedagogical reminder", reminderError.message);
+    return { report, cycle, pedagogical_reminder: !reminderError && pedagogicalReminder === true };
   });
 
 // ---------- Dashboard ----------
@@ -590,7 +597,7 @@ export const getDashboard = createServerFn({ method: "GET" })
     const [{ data: prof }, { data: consults }, subRes] = await Promise.all([
       context.supabase.from("profiles").select("*").eq("id", context.userId).single(),
       context.supabase.from("consultations").select("specialty, score, status").eq("user_id", context.userId),
-      context.supabase.from("subscriptions").select("status, plan, expires_at")
+      context.supabase.from("subscriptions").select("status, plan, starts_at, expires_at")
         .eq("user_id", context.userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     ]);
     const completed = (consults ?? []).filter((c) => c.status === "completed" && c.score != null);
@@ -600,9 +607,12 @@ export const getDashboard = createServerFn({ method: "GET" })
       ? Math.round((completed.filter((c) => (c.score ?? 0) >= 60).length / completed.length) * 100) : 0;
     const bySpec: Record<string, number> = {};
     for (const c of consults ?? []) bySpec[c.specialty] = (bySpec[c.specialty] ?? 0) + 1;
-    const sub = subRes.data as { status?: string; plan?: string; expires_at?: string | null } | null;
+    const sub = subRes.data as { status?: string; plan?: string; starts_at?: string | null; expires_at?: string | null } | null;
     const isActive = sub && (sub.status === "active" || sub.status === "free")
       && (!sub.expires_at || new Date(sub.expires_at) > new Date());
+    const daysRemaining = sub?.expires_at && isActive
+      ? Math.max(0, Math.ceil((new Date(sub.expires_at).getTime() - Date.now()) / 86_400_000))
+      : 0;
     return {
       profile: prof,
       total: consults?.length ?? 0,
@@ -610,7 +620,11 @@ export const getDashboard = createServerFn({ method: "GET" })
       avg_score: avg,
       pass_rate: passRate,
       by_specialty: bySpec,
-      subscription: sub ? { status: sub.status ?? null, plan: sub.plan ?? null, expires_at: sub.expires_at ?? null, active: Boolean(isActive) } : null,
+      subscription: sub ? {
+        status: sub.status ?? null, plan: sub.plan ?? null, starts_at: sub.starts_at ?? null,
+        expires_at: sub.expires_at ?? null, active: Boolean(isActive), days_remaining: daysRemaining,
+        is_expiring_soon: Boolean(isActive && sub.expires_at && daysRemaining >= 1 && daysRemaining <= 7),
+      } : null,
     };
   });
 
@@ -653,7 +667,7 @@ export const mySubscription = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: sub } = await context.supabase.from("subscriptions")
-      .select("status, plan, expires_at").eq("user_id", context.userId)
+      .select("status, plan, starts_at, expires_at").eq("user_id", context.userId)
       .order("created_at", { ascending: false }).limit(1).maybeSingle();
     const { data: active } = await context.supabase.rpc("is_subscription_active" as never, { _user_id: context.userId } as never);
     return { subscription: sub ?? null, active: Boolean(active) };

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  adminListUsers, adminUpsertSubscription, adminSuspendSubscription, adminDeleteUser, adminSetUserSuspended,
+  adminListUsers, adminUpsertSubscription, adminExtendSubscriptions, adminSubscriptionHistory, adminSuspendSubscription, adminDeleteUser, adminSetUserSuspended,
 } from "@/lib/admin.functions";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Loader2, Search, Trash2, Ban, BadgeCheck, Plus, Download, FileText, ShieldOff, ShieldCheck,
+  Loader2, Search, Trash2, Ban, BadgeCheck, Plus, Download, FileText, ShieldOff, ShieldCheck, CalendarPlus, History,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -59,6 +59,8 @@ function AdminUsers() {
   const qc = useQueryClient();
   const list = useServerFn(adminListUsers);
   const upsert = useServerFn(adminUpsertSubscription);
+  const extend = useServerFn(adminExtendSubscriptions);
+  const historyFn = useServerFn(adminSubscriptionHistory);
   const suspend = useServerFn(adminSuspendSubscription);
   const del = useServerFn(adminDeleteUser);
   const setSuspended = useServerFn(adminSetUserSuspended);
@@ -66,6 +68,7 @@ function AdminUsers() {
   const [search, setSearch] = useState("");
   const [applied, setApplied] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [selected, setSelected] = useState<string[]>([]);
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["admin-users", applied],
@@ -98,6 +101,7 @@ function AdminUsers() {
 
   const allRows = (data ?? []) as Row[];
   const rows = useMemo(() => filterRows(allRows, filter), [allRows, filter]);
+  const { data: history = [] } = useQuery({ queryKey: ["subscription-history"], queryFn: () => historyFn({ data: {} }) });
 
   return (
     <div className="space-y-4">
@@ -141,12 +145,22 @@ function AdminUsers() {
         <Button size="sm" variant="outline" onClick={() => exportPDF(rows)} className="border-slate-700 bg-transparent text-slate-100 hover:bg-slate-800">
           <FileText className="mr-1 h-3.5 w-3.5" /> PDF
         </Button>
+        <BulkExtensionDialog
+          users={allRows}
+          selectedIds={selected}
+          onSubmit={async (ids, days, notes) => {
+            const result = await extend({ data: { user_ids: ids, days, notes, bulk: true } });
+            toast.success(`${result.count} abonnement${result.count > 1 ? "s" : ""} prolongé${result.count > 1 ? "s" : ""}`);
+            invalidate(); qc.invalidateQueries({ queryKey: ["subscription-history"] });
+          }}
+        />
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="border-b border-slate-800 bg-slate-900 text-left text-xs uppercase tracking-wider text-slate-400">
             <tr>
+              <th className="w-10 px-3 py-3"><input aria-label="Sélectionner tous les utilisateurs filtrés" type="checkbox" checked={rows.length > 0 && rows.every((u) => selected.includes(u.id))} onChange={(e) => setSelected(e.target.checked ? Array.from(new Set([...selected, ...rows.map((u) => u.id)])) : selected.filter((id) => !rows.some((u) => u.id === id)))} /></th>
               <th className="px-4 py-3">Utilisateur</th>
               <th className="px-4 py-3">WhatsApp</th>
               <th className="px-4 py-3">Profession</th>
@@ -159,15 +173,16 @@ function AdminUsers() {
           </thead>
           <tbody>
             {(isLoading || isFetching) && (
-              <tr><td colSpan={8} className="py-10 text-center text-slate-400"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></td></tr>
+              <tr><td colSpan={9} className="py-10 text-center text-slate-400"><Loader2 className="mx-auto h-5 w-5 animate-spin" /></td></tr>
             )}
             {!isLoading && !isFetching && rows.length === 0 && (
-              <tr><td colSpan={8} className="py-10 text-center text-slate-400">Aucun utilisateur.</td></tr>
+              <tr><td colSpan={9} className="py-10 text-center text-slate-400">Aucun utilisateur.</td></tr>
             )}
             {rows.map((u) => {
-              const active = u.sub_status === "active" && (!u.sub_expires_at || new Date(u.sub_expires_at) > new Date());
+              const active = (u.sub_status === "active" || u.sub_status === "free") && (!u.sub_expires_at || new Date(u.sub_expires_at) > new Date());
               return (
                 <tr key={u.id} className="border-b border-slate-800 last:border-0">
+                  <td className="px-3 py-3"><input aria-label={`Sélectionner ${u.email}`} type="checkbox" checked={selected.includes(u.id)} onChange={(e) => setSelected((ids) => e.target.checked ? [...ids, u.id] : ids.filter((id) => id !== u.id))} /></td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-slate-100">
                       {u.display_name || "—"}
@@ -210,6 +225,10 @@ function AdminUsers() {
                           }
                         }}
                       />
+                      <ExtensionDialog user={u} onSubmit={async (days, notes) => {
+                        await extend({ data: { user_ids: [u.id], days, notes, bulk: false } });
+                        toast.success("Abonnement prolongé"); invalidate(); qc.invalidateQueries({ queryKey: ["subscription-history"] });
+                      }} />
                       {u.sub_status === "active" && (
                         <Button size="sm" variant="ghost" className="text-amber-300 hover:bg-amber-500/10"
                           onClick={() => suspendMut.mutate(u.id)} disabled={suspendMut.isPending} title="Suspendre l'abonnement">
@@ -236,12 +255,14 @@ function AdminUsers() {
           </tbody>
         </table>
       </div>
+
+      <SubscriptionHistory rows={history} users={allRows} />
     </div>
   );
 }
 
 function filterRows(rows: Row[], f: Filter): Row[] {
-  const isActive = (u: Row) => u.sub_status === "active" && (!u.sub_expires_at || new Date(u.sub_expires_at) > new Date());
+  const isActive = (u: Row) => (u.sub_status === "active" || u.sub_status === "free") && (!u.sub_expires_at || new Date(u.sub_expires_at) > new Date());
   switch (f) {
     case "consult_0": return rows.filter((u) => u.consultations_count === 0);
     case "consult_1": return rows.filter((u) => u.consultations_count === 1);
@@ -249,7 +270,7 @@ function filterRows(rows: Row[], f: Filter): Row[] {
     case "consult_gt_2": return rows.filter((u) => u.consultations_count > 2);
     case "sub_active": return rows.filter(isActive);
     case "sub_suspended": return rows.filter((u) => u.sub_status === "suspended");
-    case "user_free": return rows.filter((u) => !isActive(u));
+    case "user_free": return rows.filter((u) => u.sub_status === "free" || !u.sub_status);
     case "user_suspended": return rows.filter((u) => u.is_suspended);
     default: return rows;
   }
@@ -334,11 +355,11 @@ function SubscriptionDialog({
   user, onSubmit,
 }: {
   user: Row;
-  onSubmit: (v: { plan: string; months: number; status: "active" | "suspended" | "expired" | "free"; notes?: string }) => Promise<void>;
+  onSubmit: (v: { plan: string; duration_days: number; status: "active" | "suspended" | "expired" | "free"; notes?: string }) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [plan, setPlan] = useState(user.sub_plan ?? "standard");
-  const [months, setMonths] = useState(1);
+  const [days, setDays] = useState(30);
   const [status, setStatus] = useState<"active" | "suspended" | "expired" | "free">("active");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -361,8 +382,8 @@ function SubscriptionDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Durée (mois à ajouter)</Label>
-              <Input type="number" min={1} max={60} value={months} onChange={(e) => setMonths(parseInt(e.target.value || "1", 10))} />
+              <Label>Durée attribuée (jours)</Label>
+              <Input type="number" min={1} max={3650} value={days} onChange={(e) => setDays(parseInt(e.target.value || "1", 10))} />
             </div>
             <div>
               <Label>Statut</Label>
@@ -387,7 +408,7 @@ function SubscriptionDialog({
           <Button
             onClick={async () => {
               setLoading(true);
-              await onSubmit({ plan, months, status, notes: notes || undefined });
+              await onSubmit({ plan, duration_days: days, status, notes: notes || undefined });
               setLoading(false);
               setOpen(false);
             }}
@@ -400,6 +421,31 @@ function SubscriptionDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function ExtensionDialog({ user, onSubmit }: { user: Row; onSubmit: (days: number, notes?: string) => Promise<void> }) {
+  const [open, setOpen] = useState(false); const [days, setDays] = useState(7); const [notes, setNotes] = useState(""); const [loading, setLoading] = useState(false);
+  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button size="sm" variant="ghost" className="text-sky-300 hover:bg-sky-500/10" title="Ajouter des jours"><CalendarPlus className="h-3.5 w-3.5" /></Button></DialogTrigger><DialogContent>
+    <DialogHeader><DialogTitle>Prolonger l’abonnement — {user.display_name || user.email}</DialogTitle></DialogHeader>
+    <p className="text-sm text-muted-foreground">Expiration actuelle : {user.sub_expires_at ? new Date(user.sub_expires_at).toLocaleDateString("fr-FR") : "aucune"}. Si l’accès est expiré, les jours partent d’aujourd’hui.</p>
+    <div className="space-y-3"><div><Label>Ajouter des jours</Label><Input type="number" min={1} max={3650} value={days} onChange={(e) => setDays(parseInt(e.target.value || "1", 10))} /></div><div><Label>Motif / commentaire (optionnel)</Label><Input value={notes} onChange={(e) => setNotes(e.target.value)} /></div></div>
+    <DialogFooter><Button disabled={loading} onClick={async () => { setLoading(true); try { await onSubmit(days, notes || undefined); setOpen(false); } finally { setLoading(false); } }}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Appliquer la prolongation</Button></DialogFooter>
+  </DialogContent></Dialog>;
+}
+
+function BulkExtensionDialog({ users, selectedIds, onSubmit }: { users: Row[]; selectedIds: string[]; onSubmit: (ids: string[], days: number, notes?: string) => Promise<void> }) {
+  const [open, setOpen] = useState(false); const [scope, setScope] = useState("manual"); const [days, setDays] = useState(7); const [notes, setNotes] = useState(""); const [loading, setLoading] = useState(false);
+  const ids = scope === "manual" ? selectedIds : users.filter((u) => scope === "free" ? u.sub_status === "free" || !u.sub_status : u.sub_status === scope).map((u) => u.id);
+  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><Button size="sm" className="bg-sky-600 text-white hover:bg-sky-700"><CalendarPlus className="mr-1 h-3.5 w-3.5" />Ajouter des jours à un groupe</Button></DialogTrigger><DialogContent>
+    <DialogHeader><DialogTitle>Prolongation collective</DialogTitle></DialogHeader>
+    <div className="space-y-3"><div><Label>Utilisateurs concernés</Label><select value={scope} onChange={(e) => setScope(e.target.value)} className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="manual">Sélection manuelle ({selectedIds.length})</option><option value="free">Tous les utilisateurs Gratuit</option><option value="active">Tous les utilisateurs Premium / actifs</option><option value="suspended">Tous les abonnements suspendus</option><option value="expired">Tous les abonnements expirés</option></select><p className="mt-1 text-xs text-muted-foreground">{ids.length} utilisateur{ids.length !== 1 ? "s" : ""} seront concernés.</p></div><div><Label>Nombre de jours à ajouter</Label><Input type="number" min={1} max={3650} value={days} onChange={(e) => setDays(parseInt(e.target.value || "1", 10))} /></div><div><Label>Motif / commentaire (optionnel)</Label><Input value={notes} onChange={(e) => setNotes(e.target.value)} /></div></div>
+    <DialogFooter><Button disabled={loading || ids.length === 0} onClick={async () => { setLoading(true); try { await onSubmit(ids, days, notes || undefined); setOpen(false); } finally { setLoading(false); } }}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}APPLIQUER LA PROLONGATION</Button></DialogFooter>
+  </DialogContent></Dialog>;
+}
+
+function SubscriptionHistory({ rows, users }: { rows: Array<{ id: string; user_id: string; administrator_id: string; action: string; days_added: number; previous_expires_at: string | null; new_expires_at: string; comment: string | null; created_at: string }>; users: Row[] }) {
+  const labels = new Map(users.map((u) => [u.id, u.display_name || u.email]));
+  return <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4"><h2 className="flex items-center gap-2 font-serif text-xl text-slate-100"><History className="h-5 w-5 text-primary" />Historique des abonnements</h2><div className="mt-3 max-h-80 overflow-auto"><table className="w-full min-w-[800px] text-left text-xs"><thead className="text-slate-400"><tr><th className="pb-2">Date</th><th className="pb-2">Utilisateur</th><th className="pb-2">Administrateur</th><th className="pb-2">Ajout</th><th className="pb-2">Ancienne expiration</th><th className="pb-2">Nouvelle expiration</th><th className="pb-2">Commentaire</th></tr></thead><tbody>{rows.map((h) => <tr key={h.id} className="border-t border-slate-800 text-slate-300"><td className="py-2">{new Date(h.created_at).toLocaleString("fr-FR")}</td><td>{labels.get(h.user_id) || h.user_id}</td><td>{labels.get(h.administrator_id) || h.administrator_id}</td><td>+{h.days_added} jour{h.days_added !== 1 ? "s" : ""}</td><td>{h.previous_expires_at ? new Date(h.previous_expires_at).toLocaleDateString("fr-FR") : "—"}</td><td>{new Date(h.new_expires_at).toLocaleDateString("fr-FR")}</td><td>{h.comment || "—"}</td></tr>)}{rows.length === 0 && <tr><td colSpan={7} className="py-5 text-center text-slate-500">Aucune modification enregistrée.</td></tr>}</tbody></table></div></section>;
 }
 
 function DeleteDialog({ userLabel, onConfirm, loading }: { userLabel: string; onConfirm: () => void; loading: boolean }) {

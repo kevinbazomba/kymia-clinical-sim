@@ -68,59 +68,60 @@ export const adminListUsers = createServerFn({ method: "POST" })
     }));
   });
 
-// ---------- Activate or extend a subscription ----------
+// ---------- Assign a dated subscription period ----------
 export const adminUpsertSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z.object({
       user_id: z.string().uuid(),
       plan: z.string().min(1).max(40).default("standard"),
-      months: z.number().int().min(1).max(60).default(1),
+      duration_days: z.number().int().min(1).max(3650),
       status: z.enum(["active", "suspended", "expired", "free"]).default("active"),
       notes: z.string().max(500).optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
     await ensureAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: result, error } = await context.supabase.rpc("admin_assign_subscription" as never, {
+      _user_id: data.user_id, _plan: data.plan, _status: data.status,
+      _duration_days: data.duration_days, _comment: data.notes ?? null,
+    } as never);
+    if (error) throw new Error(error.message);
+    const row = (result as Array<{ starts_at: string; expires_at: string }> | null)?.[0];
+    return { ok: true, starts_at: row?.starts_at ?? null, expires_at: row?.expires_at ?? null };
+  });
 
-    const { data: existing } = await supabaseAdmin
-      .from("subscriptions")
-      .select("id, expires_at")
-      .eq("user_id", data.user_id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+// ---------- Extend one subscription or a selected/status-based group ----------
+export const adminExtendSubscriptions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    user_ids: z.array(z.string().uuid()).min(1).max(200),
+    days: z.number().int().min(1).max(3650),
+    notes: z.string().max(500).optional(),
+    bulk: z.boolean().default(false),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { data: rows, error } = await context.supabase.rpc("admin_extend_subscriptions" as never, {
+      _user_ids: data.user_ids, _days: data.days, _comment: data.notes ?? null, _bulk: data.bulk,
+    } as never);
+    if (error) throw new Error(error.message);
+    return { ok: true, count: (rows as unknown[] | null)?.length ?? 0 };
+  });
 
-    const now = new Date();
-    const base = existing?.expires_at && new Date(existing.expires_at) > now
-      ? new Date(existing.expires_at)
-      : now;
-    const newExpiry = new Date(base);
-    newExpiry.setMonth(newExpiry.getMonth() + data.months);
-
-    if (existing) {
-      const { error } = await supabaseAdmin
-        .from("subscriptions")
-        .update({
-          plan: data.plan,
-          status: data.status,
-          expires_at: newExpiry.toISOString(),
-          notes: data.notes ?? null,
-        })
-        .eq("id", existing.id);
-      if (error) throw new Error(error.message);
-    } else {
-      const { error } = await supabaseAdmin.from("subscriptions").insert({
-        user_id: data.user_id,
-        plan: data.plan,
-        status: data.status,
-        expires_at: newExpiry.toISOString(),
-        notes: data.notes ?? null,
-      });
-      if (error) throw new Error(error.message);
-    }
-    return { ok: true, expires_at: newExpiry.toISOString() };
+export const adminSubscriptionHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid().optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context);
+    const { data: rows, error } = await context.supabase.rpc("admin_subscription_history" as never, {
+      _user_id: data.user_id ?? null, _limit: 100,
+    } as never);
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as Array<{
+      id: string; user_id: string; administrator_id: string; action: string; days_added: number;
+      previous_expires_at: string | null; new_expires_at: string; comment: string | null; created_at: string;
+    }>;
   });
 
 // ---------- Suspend a subscription ----------

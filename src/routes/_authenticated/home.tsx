@@ -12,6 +12,8 @@ import frHome from "@/locales/fr/home.json";
 import enHome from "@/locales/en/home.json";
 
 const COMMUNITY_URL = "https://chat.whatsapp.com/C269pi8276F8PkR985wzJp?s=cl&p=a&ilr=4";
+const SUBSCRIPTION_WHATSAPP_URL = "https://wa.me/243990918446";
+const EXTENSION_MESSAGE = "Bonjour, je souhaite PROLONGER mon abonnement et profiter des avantages.\n\nMon adresse mail d'inscription sur Kymia est :";
 
 const GUIDE_STEPS: Record<"fr" | "en", Array<{ title: string; desc: string }>> = {
   fr: frHome.guide.steps,
@@ -49,10 +51,27 @@ function HomePage() {
   const { data: winner } = useQuery({ queryKey: ["jury-winner"], queryFn: () => winnerFn() });
   const steps = GUIDE_STEPS[lang];
   const dateLocale = lang === "en" ? "en-US" : "fr-FR";
+  const subscription = data.subscription;
 
   return (
     <div className="space-y-8">
       <LanguageHomeBanner />
+      {subscription?.is_expiring_soon && (
+        <section className="relative overflow-hidden rounded-3xl border border-amber-400/50 bg-gradient-to-r from-amber-50 via-orange-50 to-card p-5 shadow-[var(--shadow-card)] dark:from-amber-950/30 dark:via-orange-950/20">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-amber-500 text-white shadow-lg"><Crown className="h-5 w-5" /></div>
+              <div>
+                <p className="font-serif text-xl text-foreground">Votre abonnement arrive bientôt à expiration</p>
+                <p className="mt-1 text-sm text-muted-foreground">Il vous reste {subscription.days_remaining} jour{subscription.days_remaining !== 1 ? "s" : ""} pour continuer à profiter pleinement de Kymia.</p>
+              </div>
+            </div>
+            <a href={`${SUBSCRIPTION_WHATSAPP_URL}?text=${encodeURIComponent(EXTENSION_MESSAGE)}`} target="_blank" rel="noopener noreferrer" className="shrink-0">
+              <Button className="bg-emerald-600 text-white hover:bg-emerald-700"><MessageCircle className="mr-2 h-4 w-4" />PROLONGER MON ABONNEMENT</Button>
+            </a>
+          </div>
+        </section>
+      )}
       {winner && (
         <section className="relative overflow-hidden rounded-3xl border-2 border-gold/40 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 p-5 shadow-[var(--shadow-card)] dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-amber-950/30">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">

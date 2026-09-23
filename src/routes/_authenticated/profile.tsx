@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Trophy } from "lucide-react";
+import { Crown, Loader2, Trophy } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
 import { LanguageSettings } from "@/components/LanguageSwitch";
@@ -93,6 +94,8 @@ function ProfilePage() {
         <Stat label={t("profile.stats.kymiaGold")} value={wins?.kymia_gold_count ?? 0} />
       </div>
 
+      <SubscriptionCard subscription={data?.subscription} locale={dateLocale} />
+
       <section className="rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)]">
         <h2 className="flex items-center gap-2 font-serif text-2xl">
           <Trophy className="h-5 w-5 text-gold" /> {t("profile.goldHistory.title")}
@@ -116,6 +119,54 @@ function ProfilePage() {
       <LanguageSettings />
     </div>
   );
+}
+
+function SubscriptionCard({
+  subscription, locale,
+}: {
+  subscription: {
+    status: string | null; plan: string | null; starts_at: string | null; expires_at: string | null;
+    active: boolean; days_remaining: number; is_expiring_soon: boolean;
+  } | null | undefined;
+  locale: string;
+}) {
+  const status = subscription?.status === "free" ? "Gratuit"
+    : subscription?.status === "active" ? "Premium"
+      : subscription?.status === "suspended" ? "Suspendu"
+        : subscription ? "Expiré" : "Gratuit";
+  const format = (date: string | null | undefined) => date
+    ? new Date(date).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) : "—";
+  const totalDays = subscription?.starts_at && subscription?.expires_at
+    ? Math.max(1, Math.ceil((new Date(subscription.expires_at).getTime() - new Date(subscription.starts_at).getTime()) / 86_400_000)) : 0;
+  const progress = subscription?.active && totalDays ? Math.min(100, Math.round((subscription.days_remaining / totalDays) * 100)) : 0;
+
+  return (
+    <section className={`rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)] ${subscription?.is_expiring_soon ? "border-amber-400/60" : ""}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 font-serif text-2xl"><Crown className="h-5 w-5 text-primary" /> Mon abonnement</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Vos informations d’accès Kymia.</p>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${subscription?.active ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"}`}>{status}</span>
+      </div>
+      <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+        <Info label="Début" value={format(subscription?.starts_at)} />
+        <Info label="Expiration" value={format(subscription?.expires_at)} />
+        <Info label="Jours restants" value={subscription?.active ? `${subscription.days_remaining} jour${subscription.days_remaining !== 1 ? "s" : ""}` : "—"} />
+        <Info label="Type / durée" value={subscription?.plan || "—"} />
+      </div>
+      {subscription?.active && totalDays > 0 && (
+        <div className="mt-5">
+          <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground"><span>Progression de l’abonnement</span><span>{subscription.days_remaining} jour{subscription.days_remaining !== 1 ? "s" : ""} restant{subscription.days_remaining !== 1 ? "s" : ""}</span></div>
+          <Progress value={progress} className={subscription.is_expiring_soon ? "[&>div]:bg-amber-500" : ""} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return <div className="rounded-xl bg-secondary/50 p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-medium text-foreground">{value}</p></div>;
 }
 
 
