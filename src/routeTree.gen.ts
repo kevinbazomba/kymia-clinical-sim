@@ -25,6 +25,7 @@ import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSalleDeGardeRouteImport } from './routes/_authenticated/salle-de-garde'
 import { Route as AuthenticatedSpecialtiesRouteImport } from './routes/_authenticated/specialties'
+import { Route as LegalDocumentRouteImport } from './routes/legal.$document'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -121,6 +122,11 @@ const AuthenticatedSpecialtiesRoute =
     path: '/specialties',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LegalDocumentRoute = LegalDocumentRouteImport.update({
+  id: '/legal/$document',
+  path: '/legal/$document',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/specialties': typeof AuthenticatedSpecialtiesRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/diversity': typeof AuthenticatedAdminDiversityRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/specialties': typeof AuthenticatedSpecialtiesRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/diversity': typeof AuthenticatedAdminDiversityRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/salle-de-garde': typeof AuthenticatedSalleDeGardeRouteWithChildren
   '/_authenticated/specialties': typeof AuthenticatedSpecialtiesRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/diversity': typeof AuthenticatedAdminDiversityRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/salle-de-garde'
     | '/specialties'
+    | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/diversity'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/salle-de-garde'
     | '/specialties'
+    | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/diversity'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/salle-de-garde'
     | '/_authenticated/specialties'
+    | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/diversity'
@@ -363,6 +375,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  LegalDocumentRoute: typeof LegalDocumentRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicHooksJuryTickRoute: typeof ApiPublicHooksJuryTickRoute
@@ -481,6 +494,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/specialties'
       preLoaderRoute: typeof AuthenticatedSpecialtiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/legal/$document': {
+      id: '/legal/$document'
+      path: '/legal/$document'
+      fullPath: '/legal/$document'
+      preLoaderRoute: typeof LegalDocumentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
@@ -638,6 +658,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  LegalDocumentRoute: LegalDocumentRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicHooksJuryTickRoute: ApiPublicHooksJuryTickRoute,
@@ -645,3 +666,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

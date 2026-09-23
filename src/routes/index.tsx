@@ -3,6 +3,7 @@ import { Activity, Brain, Stethoscope, BookOpen, ShieldCheck, Trophy } from "luc
 import { Button } from "@/components/ui/button";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
+import { KymiaFooter } from "@/components/KymiaFooter";
 
 const headT = makeT(getStoredLang());
 
@@ -29,7 +30,7 @@ function Landing() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
       <div className="absolute inset-0 -z-10 bg-[image:var(--gradient-hero)]" />
 
       {/* Nav */}
@@ -81,7 +82,7 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-16 sm:gap-6 sm:px-6 sm:pb-24 md:grid-cols-3">
+      <section className="mx-auto grid w-full max-w-6xl flex-1 gap-4 px-4 pb-16 sm:gap-6 sm:px-6 sm:pb-24 md:grid-cols-3">
         {features.map((f) => (
           <div key={f.title} className="rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-elegant)]">
             <div className="grid h-10 w-10 place-items-center rounded-lg bg-secondary text-primary">
@@ -93,9 +94,7 @@ function Landing() {
         ))}
       </section>
 
-      <footer className="border-t bg-card/50 py-8 text-center text-sm text-muted-foreground">
-        {t("landing.footer", { year: new Date().getFullYear() })}
-      </footer>
+      <KymiaFooter />
     </div>
   );
 }

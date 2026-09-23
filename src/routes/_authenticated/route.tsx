@@ -11,6 +11,7 @@ import { LanguageDetectDialog } from "@/components/LanguageSwitch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense, useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
+import { KymiaFooter } from "@/components/KymiaFooter";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -66,7 +67,7 @@ function AuthLayout() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/40">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-background to-secondary/40">
       <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-3 sm:px-4">
           <Link to="/home" className="flex items-center gap-2">
@@ -110,11 +111,12 @@ function AuthLayout() {
         </nav>
 
       </header>
-      <main className="mx-auto max-w-6xl px-3 py-4 sm:px-4 sm:py-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-4 sm:px-4 sm:py-6">
         <Suspense fallback={<GenericPageSkeleton />}>
           <Outlet />
         </Suspense>
       </main>
+      <KymiaFooter />
       <InstallPrompt />
       <LanguageDetectDialog />
     </div>
