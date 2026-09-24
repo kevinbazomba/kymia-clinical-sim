@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -130,17 +131,11 @@ function SocialButtons() {
   async function handle(provider: "google" | "apple") {
     setLoading(provider);
     try {
-      // Authentication accounts live in Supabase. Keeping OAuth on the same
-      // provider avoids a Lovable callback URL that is not served by kymia.site.
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth`,
-        },
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
       });
-      if (error) throw error;
-      if (!data.url) throw new Error(t("auth.social.error"));
-      window.location.assign(data.url);
+      if (result.error) throw result.error;
+      // If redirected, browser navigates away. If tokens set, page will react to session.
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.social.error"));
     } finally {
