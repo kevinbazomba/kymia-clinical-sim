@@ -266,15 +266,18 @@ function ResetForm({ onBack }: { onBack: () => void }) {
   const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
       });
       if (error) throw error;
-      toast.success(t("auth.reset.sent"));
+      // Deliberately use the same response for all addresses: this prevents
+      // attackers from discovering which email addresses have an account.
+      setSent(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("auth.reset.unknownError"));
     } finally {
@@ -294,6 +297,7 @@ function ResetForm({ onBack }: { onBack: () => void }) {
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.reset.submit")}
         </Button>
       </form>
+      {sent && <p role="status" className="mt-4 rounded-lg bg-secondary p-3 text-sm text-muted-foreground">{t("auth.reset.sent")}</p>}
       <div className="mt-6 text-xs text-muted-foreground">
         <button onClick={onBack} className="hover:text-foreground">{t("auth.reset.back")}</button>
       </div>
