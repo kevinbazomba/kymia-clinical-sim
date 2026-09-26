@@ -1,0 +1,56 @@
+GUIDE — Réinitialisation de mot de passe Kymia avec Brevo
+==========================================================
+
+Le lien « Mot de passe oublié ? » est disponible sur la page de connexion.
+L'utilisateur saisit son e-mail, reçoit un lien sécurisé, puis choisit un
+nouveau mot de passe.
+
+CONFIGURATION BREVO
+-------------------
+
+1. Créer ou ouvrir le compte Brevo.
+2. Valider l'adresse qui servira à envoyer les e-mails.
+3. Dans Brevo, aller dans SMTP & API > SMTP.
+4. Générer une nouvelle clé SMTP.
+   IMPORTANT : ne jamais partager cette clé ni la mettre dans le code source.
+
+CONFIGURATION SUPABASE
+----------------------
+
+Dans Authentication > Emails > SMTP Settings, renseigner :
+
+- Host : smtp-relay.brevo.com
+- Port : 587
+- Username : le SMTP login affiché par Brevo
+- Password : la clé SMTP générée par Brevo
+- Sender email address : l'adresse validée dans Brevo
+- Sender name : Kymia Clinical Sim
+
+Dans Authentication > URL Configuration :
+
+- Site URL : l'adresse principale du site publié
+  Exemple : https://www.kymia.com
+
+- Redirect URLs : ajouter l'adresse du site suivie de /reset-password
+  Exemple : https://www.kymia.com/reset-password
+
+Pour les essais locaux, ajouter aussi l'adresse affichée par Vite, par exemple :
+http://localhost:5173/reset-password
+
+TEST
+----
+
+1. Ouvrir la page de connexion Kymia.
+2. Cliquer sur « Mot de passe oublié ? ».
+3. Saisir l'adresse d'un compte utilisateur.
+4. Ouvrir l'e-mail reçu et cliquer sur le lien.
+5. Choisir puis confirmer le nouveau mot de passe.
+6. Se reconnecter avec ce nouveau mot de passe.
+
+SECURITE
+--------
+
+- Ne jamais envoyer une clé SMTP ou un mot de passe dans un message.
+- Ne jamais stocker ces secrets dans le code ou dans Git.
+- Le message de récupération reste volontairement neutre : il ne confirme pas
+  qu'une adresse e-mail possède un compte.

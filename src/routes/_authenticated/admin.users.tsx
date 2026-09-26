@@ -216,13 +216,9 @@ function AdminUsers() {
                       <SubscriptionDialog
                         user={u}
                         onSubmit={async (v) => {
-                          try {
-                            await upsert({ data: { user_id: u.id, ...v } });
-                            toast.success("Abonnement mis à jour");
-                            invalidate();
-                          } catch (e) {
-                            toast.error(e instanceof Error ? e.message : "Erreur");
-                          }
+                          await upsert({ data: { user_id: u.id, ...v } });
+                          toast.success("Abonnement mis à jour");
+                          invalidate();
                         }}
                       />
                       <ExtensionDialog user={u} onSubmit={async (days, notes) => {
@@ -408,9 +404,14 @@ function SubscriptionDialog({
           <Button
             onClick={async () => {
               setLoading(true);
-              await onSubmit({ plan, duration_days: days, status, notes: notes || undefined });
-              setLoading(false);
-              setOpen(false);
+              try {
+                await onSubmit({ plan, duration_days: days, status, notes: notes || undefined });
+                setOpen(false);
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Impossible d'attribuer l'abonnement");
+              } finally {
+                setLoading(false);
+              }
             }}
             disabled={loading}
           >
