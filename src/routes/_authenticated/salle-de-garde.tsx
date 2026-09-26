@@ -1,11 +1,11 @@
 // @ts-nocheck
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listGuardSpecialties } from "@/lib/salle-de-garde.functions";
 import { Baby, Brain, HeartPulse, MessageCircle, Scissors, Siren, Stethoscope, Users } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/salle-de-garde")({ component: GuardHome });
+export const Route = createFileRoute("/_authenticated/salle-de-garde")({ component: GuardLayout });
 
 const icons: Record<string, typeof Stethoscope> = { HeartPulse, Scissors, Baby, Brain, Siren, Stethoscope };
 
@@ -19,6 +19,11 @@ const DEFAULT_SPECIALTIES = [
   { id: "psychiatrie", name: "Psychiatrie", description: "Sémiologie, entretiens et prises en charge en santé mentale.", icon: "Brain", discussions_count: 0, participants_count: 0 },
   { id: "urgences", name: "Médecine d’urgence", description: "Décisions rapides, détresses vitales et gestes d’urgence.", icon: "Siren", discussions_count: 0, participants_count: 0 },
 ];
+
+function GuardLayout() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  return pathname === "/salle-de-garde" ? <GuardHome /> : <Outlet />;
+}
 
 function GuardHome() {
   const getSpecialties = useServerFn(listGuardSpecialties);
