@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
 import { KymiaFooter } from "@/components/KymiaFooter";
+import { LandingDemo } from "@/components/LandingDemo";
 
 const headT = makeT(getStoredLang());
 
@@ -80,6 +81,8 @@ function Landing() {
           </Link>
         </div>
       </section>
+
+      <LandingDemo />
 
       {/* Features */}
       <section className="mx-auto grid w-full max-w-6xl flex-1 gap-4 px-4 pb-16 sm:gap-6 sm:px-6 sm:pb-24 md:grid-cols-3">
