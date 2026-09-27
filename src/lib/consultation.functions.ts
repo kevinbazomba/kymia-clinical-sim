@@ -5,7 +5,7 @@ import { generateText } from "ai";
 import { createLovableAiGatewayProvider, getDefaultAiModel } from "@/lib/ai-gateway.server";
 import { SPECIALTIES, EXAM_CATEGORIES } from "@/lib/specialties";
 import { getSubspecialty } from "@/lib/subspecialties";
-import { planCase, isTooSimilar } from "@/lib/case-selection.server";
+import { planCase } from "@/lib/case-selection.server";
 import { fetchUserLang, langDirective, normalizeLang, type AiLang } from "@/lib/lang.server";
 
 // ---------- Types ----------
@@ -127,7 +127,6 @@ export const createConsultation = createServerFn({ method: "POST" })
     });
     const subSpec = plan.subspecialty;
     const subSpecLabel = subSpec ? (getSubspecialty(subSpec)?.label ?? subSpec) : null;
-    const recentCases = plan.recentCases;
 
     const buildPrompt = (extraConstraint: string) => `Tu es Kymia Motcho, générateur de cas cliniques pour la formation médicale en Afrique.
 
@@ -171,36 +170,12 @@ Réponds STRICTEMENT en JSON valide selon ce schéma :
 }${langDirective(lang)}`;
 
     async function generateCase(extra: string): Promise<CaseData> {
-      const { text } = await generateText({ model, prompt: buildPrompt(extra), temperature: 1.0 });
+      const { text } = await generateText({ model, prompt: buildPrompt(extra), temperature: 0.7, maxOutputTokens: 800 });
       return normalizeCaseData(extractJson<CaseData>(text));
     }
 
-    let caseData = await generateCase("");
-    let check = isTooSimilar(
-      {
-        diagnosis: caseData.hidden_diagnosis ?? "",
-        chief_complaint: caseData.chief_complaint ?? "",
-        age: caseData.patient?.age ?? 0,
-        sex: caseData.patient?.sex ?? "",
-      },
-      recentCases,
-    );
-    if (check.similar) {
-      // Cas trop proche d'un cas récent : rejet et régénération sous contrainte renforcée.
-      const rejected = caseData.hidden_diagnosis;
-      caseData = await generateCase(
-        `\nCONTRAINTE SUPPLÉMENTAIRE : la proposition « ${rejected} » a été REJETÉE car trop proche d'un cas déjà vu par l'apprenant. Change nettement le tableau clinique (autre motif d'entrée, autre âge dans la tranche autorisée, autre gravité, autres différentiels) tout en respectant la pathologie imposée.`,
-      );
-      check = isTooSimilar(
-        {
-          diagnosis: caseData.hidden_diagnosis ?? "",
-          chief_complaint: caseData.chief_complaint ?? "",
-          age: caseData.patient?.age ?? 0,
-          sex: caseData.patient?.sex ?? "",
-        },
-        recentCases,
-      );
-    }
+    // Une seule génération: le plan évite déjà les pathologies vues récemment.
+    const caseData = await generateCase("");
     caseData.subspecialty = subSpecLabel ?? caseData.subspecialty;
 
     const firstMessage: ChatMessage = { role: "assistant", content: caseData.opening_line, ts: Date.now() };

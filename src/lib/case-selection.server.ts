@@ -36,7 +36,6 @@ export interface CasePlan {
   context: string;
   avoid: string[];
   nearMiss: boolean;
-  recentCases: PriorCase[];
 }
 
 const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -226,7 +225,6 @@ export async function planCase(opts: {
     context: rand(AFRICAN_CONTEXTS),
     avoid: recentSameBank.slice(0, 12).map((c) => c.pathology_label || c.pathology_key),
     nearMiss: wantNearMiss,
-    recentCases: recent,
   };
 }
 
