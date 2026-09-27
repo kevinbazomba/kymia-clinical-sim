@@ -49,13 +49,59 @@ export const listGuardDiscussions = createServerFn({ method: "POST" })
     const [{ data: profiles }, { data: replies }, { data: reactions }] = await Promise.all([
       authorIds.length ? context.supabase.from("profiles").select("id, display_name, profession, level").in("id", authorIds) : Promise.resolve({ data: [] }),
       ids.length ? context.supabase.from("guard_replies").select("discussion_id").in("discussion_id", ids).eq("is_hidden", false) : Promise.resolve({ data: [] }),
-      ids.length ? context.supabase.from("guard_reactions").select("discussion_id").in("discussion_id", ids) : Promise.resolve({ data: [] }),
+      ids.length ? context.supabase.from("guard_reactions").select("discussion_id, type, user_id").in("discussion_id", ids) : Promise.resolve({ data: [] }),
     ]);
     const authors = authorMap(profiles ?? []);
     return (discussions ?? []).map((d) => ({ ...d, author: authors[d.author_id],
       replies_count: (replies ?? []).filter((r) => r.discussion_id === d.id).length,
-      reactions_count: (reactions ?? []).filter((r) => r.discussion_id === d.id).length,
+      reactions: (reactions ?? []).filter((r) => r.discussion_id === d.id),
     })).filter((d) => !data.unanswered || d.replies_count === 0);
+  });
+
+export const listGuardMessages = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ specialty_id: z.string().min(2).max(80) }).parse(d))
+  .handler(async ({ data, context }: any) => {
+    const { data: messages, error } = await context.supabase
+      .from("guard_discussions")
+      .select("id, specialty_id, author_id, content, created_at")
+      .eq("specialty_id", data.specialty_id)
+      .eq("is_hidden", false)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    const ids = (messages ?? []).map((m) => m.id);
+    const authors = [...new Set((messages ?? []).map((m) => m.author_id))];
+    const [{ data: profiles }, { data: reactions }] = await Promise.all([
+      authors.length ? context.supabase.from("profiles").select("id, display_name, profession, level").in("id", authors) : Promise.resolve({ data: [] }),
+      ids.length ? context.supabase.from("guard_reactions").select("discussion_id, type").in("discussion_id", ids) : Promise.resolve({ data: [] }),
+    ]);
+    const names = authorMap(profiles ?? []);
+    return (messages ?? []).map((m) => ({
+      ...m,
+      author: names[m.author_id],
+      reactions: (reactions ?? []).filter((r) => r.discussion_id === m.id),
+    }));
+  });
+
+// Dans la vue groupe, chaque publication est un message autonome du fil.
+export const createGuardMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    specialty_id: z.string().min(2).max(80),
+    content: z.string().trim().min(2).max(10000),
+  }).parse(d))
+  .handler(async ({ data, context }: any) => {
+    const content = data.content.trim();
+    const { data: row, error } = await context.supabase.from("guard_discussions").insert({
+      specialty_id: data.specialty_id,
+      author_id: context.userId,
+      title: content.slice(0, 180).padEnd(5, "."),
+      content,
+      type: "discussion",
+    } as never).select("id").single();
+    if (error || !row) throw new Error(error?.message ?? "Envoi impossible");
+    return { id: row.id as string };
   });
 
 export const getGuardDiscussion = createServerFn({ method: "POST" })

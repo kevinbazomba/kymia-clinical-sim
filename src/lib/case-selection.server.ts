@@ -36,6 +36,7 @@ export interface CasePlan {
   context: string;
   avoid: string[];
   nearMiss: boolean;
+  recentCases: PriorCase[];
 }
 
 const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -136,17 +137,17 @@ export async function planCase(opts: {
 }): Promise<CasePlan> {
   const { supabase, userId, specialty } = opts;
 
-  // 1) historique personnel
-  let recent: PriorCase[] = [];
-  try {
-    const { data } = await supabase
-      .from("case_registry")
-      .select("pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(60);
-    recent = (data ?? []) as PriorCase[];
-  } catch { /* historique indisponible : on continue sans */ }
+  // Lire l'historique une seule fois: il sert au plan, à l'anti-répétition
+  // et aux contraintes du prompt de génération.
+  const historyPromise = supabase
+    .from("case_registry")
+    .select("pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(60)
+    .then(({ data }: { data: PriorCase[] | null }) => data ?? [])
+    .catch(() => [] as PriorCase[]);
+  const recent = await historyPromise;
 
   const recentInSpec = recent.filter((c) => true); // toutes spécialités pour la démographie
   const subspecialty =
@@ -155,19 +156,18 @@ export async function planCase(opts: {
       ? pickSubspecialty(recent.filter((c) => c.subspecialty))
       : null);
 
+  const { data: globalUsageData } = await supabase.rpc("global_pathology_usage", {
+    _specialty: specialty,
+    _subspecialty: subspecialty,
+  }).then((result: { data: { pathology_key: string; uses: number }[] | null }) => result)
+    .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] }));
+
   const bank = getBank(specialty, subspecialty);
   const recentSameBank = recent.filter((c) => bank.some((b) => b.key === c.pathology_key));
 
   // 2) usage global (rotation plateforme)
   const usage = new Map<string, number>();
-  try {
-    const { data } = await supabase.rpc("global_pathology_usage", {
-      _specialty: specialty,
-      _subspecialty: subspecialty,
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((data ?? []) as any[]).forEach((r) => usage.set(r.pathology_key as string, Number(r.uses) || 0));
-  } catch { /* rotation globale optionnelle */ }
+  (globalUsageData ?? []).forEach((r) => usage.set(r.pathology_key, Number(r.uses) || 0));
   const totalUses = [...usage.values()].reduce((a, b) => a + b, 0);
   const avgUses = totalUses / Math.max(1, bank.length);
 
@@ -226,6 +226,7 @@ export async function planCase(opts: {
     context: rand(AFRICAN_CONTEXTS),
     avoid: recentSameBank.slice(0, 12).map((c) => c.pathology_label || c.pathology_key),
     nearMiss: wantNearMiss,
+    recentCases: recent,
   };
 }
 

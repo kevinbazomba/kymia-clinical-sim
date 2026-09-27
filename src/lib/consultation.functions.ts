@@ -5,7 +5,7 @@ import { generateText } from "ai";
 import { createLovableAiGatewayProvider, getDefaultAiModel } from "@/lib/ai-gateway.server";
 import { SPECIALTIES, EXAM_CATEGORIES } from "@/lib/specialties";
 import { getSubspecialty } from "@/lib/subspecialties";
-import { planCase, fetchRecentCases, isTooSimilar } from "@/lib/case-selection.server";
+import { planCase, isTooSimilar } from "@/lib/case-selection.server";
 import { fetchUserLang, langDirective, normalizeLang, type AiLang } from "@/lib/lang.server";
 
 // ---------- Types ----------
@@ -110,8 +110,10 @@ export const createConsultation = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertCanCreateConsultation(context);
-    const lang = await fetchUserLang(context.supabase, context.userId);
+    const [, lang] = await Promise.all([
+      assertCanCreateConsultation(context),
+      fetchUserLang(context.supabase, context.userId),
+    ]);
     const gateway = getGateway();
     const model = gateway(getDefaultAiModel());
     const seed = Math.random().toString(36).slice(2);
@@ -125,7 +127,7 @@ export const createConsultation = createServerFn({ method: "POST" })
     });
     const subSpec = plan.subspecialty;
     const subSpecLabel = subSpec ? (getSubspecialty(subSpec)?.label ?? subSpec) : null;
-    const recentCases = await fetchRecentCases(context.supabase, context.userId, 20);
+    const recentCases = plan.recentCases;
 
     const buildPrompt = (extraConstraint: string) => `Tu es Kymia Motcho, générateur de cas cliniques pour la formation médicale en Afrique.
 

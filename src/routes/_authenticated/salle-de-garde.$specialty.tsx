@@ -1,42 +1,78 @@
 // @ts-nocheck
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createGuardDiscussion, listGuardDiscussions, listGuardSpecialties } from "@/lib/salle-de-garde.functions";
+import { createGuardMessage, listGuardMessages, listGuardSpecialties, reactToGuardContent } from "@/lib/salle-de-garde.functions";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Flame, Lock, MessageCircle, Plus, Search, Stethoscope } from "lucide-react";
+import { ArrowLeft, Heart, Lightbulb, Loader2, MessageCircle, Send, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/salle-de-garde/$specialty")({ component: GuardSpecialty });
-const labels: Record<string, string> = { question: "Question", case: "Cas clinique", discussion: "Discussion", debate: "Débat scientifique", revision: "Révision" };
+const reactions = [
+  { type: "useful", label: "Utile", Icon: ThumbsUp },
+  { type: "relevant", label: "Pertinent", Icon: Lightbulb },
+  { type: "interesting", label: "Intéressant", Icon: Heart },
+] as const;
 
 function GuardSpecialty() {
-  const { specialty } = Route.useParams(); const qc = useQueryClient(); const navigate = useNavigate();
-  const list = useServerFn(listGuardDiscussions); const specialtiesFn = useServerFn(listGuardSpecialties); const create = useServerFn(createGuardDiscussion);
-  const [search, setSearch] = useState(""); const [type, setType] = useState<string>(""); const [unanswered, setUnanswered] = useState(false); const [open, setOpen] = useState(false);
+  const { specialty } = Route.useParams();
+  const qc = useQueryClient();
+  const list = useServerFn(listGuardMessages);
+  const specialtiesFn = useServerFn(listGuardSpecialties);
+  const send = useServerFn(createGuardMessage);
+  const react = useServerFn(reactToGuardContent);
+  const [content, setContent] = useState("");
   const { data: specialties } = useQuery({ queryKey: ["guard-specialties"], queryFn: () => specialtiesFn() });
-  const { data: discussions, isLoading } = useQuery({ queryKey: ["guard-discussions", specialty, search, type, unanswered], queryFn: () => list({ data: { specialty_id: specialty, search, type: type || undefined, unanswered } }) });
-  const createMut = useMutation({ mutationFn: (data: { title: string; content: string; type: "question" | "case" | "discussion" | "debate" | "revision" }) => create({ data: { specialty_id: specialty, ...data } }), onSuccess: ({ id }) => { qc.invalidateQueries({ queryKey: ["guard-discussions", specialty] }); navigate({ to: "/salle-de-garde/discussion/$id", params: { id } }); }, onError: (e) => toast.error(e instanceof Error ? e.message : "Publication impossible") });
-  const name = specialties?.find((s) => s.id === specialty)?.name ?? "Salle de garde";
-  return <div className="space-y-6">
-    <section className="rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] md:flex md:items-end md:justify-between">
-      <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Salle de garde</p><h1 className="mt-2 font-serif text-4xl">🩺 {name}</h1><p className="mt-2 text-sm text-muted-foreground">Questions, cas cliniques et débats scientifiques autour de cette spécialité.</p></div>
-      <Button className="mt-5 md:mt-0" onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />Nouvelle discussion</Button>
-    </section>
-    <p className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs">Ne partagez aucune donnée permettant d’identifier un patient réel : nom, dossier, coordonnées ou photographie identifiable.</p>
-    <div className="flex flex-col gap-3 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher dans cette spécialité" /></div><select value={type} onChange={(e) => setType(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="">Toutes</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}s</option>)}</select><Button variant={unanswered ? "default" : "outline"} onClick={() => setUnanswered((v) => !v)}>Sans réponse</Button></div>
-    <div className="space-y-3">{isLoading ? <p className="py-12 text-center text-muted-foreground">Chargement des discussions…</p> : discussions?.length ? discussions.map((d) => <Link key={d.id} to="/salle-de-garde/discussion/$id" params={{ id: d.id }} className="block rounded-2xl border bg-card p-5 shadow-[var(--shadow-soft)] transition hover:border-primary/40"><div className="flex gap-3"><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2">{d.is_pinned && <Badge>📌 Importante</Badge>}<Badge variant="secondary">{labels[d.type]}</Badge>{d.is_locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}</div><h2 className="mt-2 font-serif text-xl">{d.is_pinned && "🔥 "}{d.title}</h2><p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{d.content}</p><p className="mt-3 text-xs text-muted-foreground">{d.author?.name} — {d.author?.profession} · {new Date(d.created_at).toLocaleDateString("fr-FR")}</p><div className="mt-3 flex gap-4 text-xs text-muted-foreground"><span><MessageCircle className="mr-1 inline h-3.5 w-3.5" />{d.replies_count} réponse{d.replies_count > 1 ? "s" : ""}</span><span><Eye className="mr-1 inline h-3.5 w-3.5" />{d.views_count} vue{d.views_count > 1 ? "s" : ""}</span>{d.replies_count >= 5 && <span className="text-primary"><Flame className="mr-1 inline h-3.5 w-3.5" />Active</span>}</div></div></div></Link>) : <div className="rounded-2xl border border-dashed p-10 text-center"><Stethoscope className="mx-auto h-7 w-7 text-primary" /><h2 className="mt-3 font-serif text-xl">La Salle de garde est encore calme…</h2><p className="mt-2 text-sm text-muted-foreground">Soyez le premier à lancer une discussion dans cette spécialité.</p><Button className="mt-5" onClick={() => setOpen(true)}>Lancer une discussion</Button></div>}</div>
-    <NewDiscussionDialog open={open} onOpenChange={setOpen} loading={createMut.isPending} onSubmit={(data) => createMut.mutate(data)} />
-  </div>;
-}
+  const queryKey = ["guard-discussions", specialty, "chat"];
+  const { data, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => list({ data: { specialty_id: specialty } }),
+    refetchInterval: 5000,
+  });
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey });
+    qc.invalidateQueries({ queryKey: ["guard-specialties"] });
+  };
+  const sendMut = useMutation({
+    mutationFn: () => send({ data: { specialty_id: specialty, content } }),
+    onSuccess: () => { setContent(""); refresh(); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Envoi impossible"),
+  });
+  const reactMut = useMutation({
+    mutationFn: ({ id, type }: { id: string; type: typeof reactions[number]["type"] }) => react({ data: { discussion_id: id, type } }),
+    onSuccess: refresh,
+    onError: () => toast.error("Réaction impossible pour le moment."),
+  });
+  const name = specialties?.find((s) => s.id === specialty)?.name ?? "Groupe de spécialité";
+  const messages = [...(data ?? [])].reverse();
 
-function NewDiscussionDialog({ open, onOpenChange, loading, onSubmit }: { open: boolean; onOpenChange: (open: boolean) => void; loading: boolean; onSubmit: (data: { title: string; content: string; type: "question" | "case" | "discussion" | "debate" | "revision" }) => void }) {
-  const [title, setTitle] = useState(""); const [content, setContent] = useState(""); const [type, setType] = useState<"question" | "case" | "discussion" | "debate" | "revision">("question");
-  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle className="font-serif text-2xl">Nouvelle discussion</DialogTitle></DialogHeader><form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit({ title, content, type }); }}><div><Label>Titre de la discussion</Label><Input className="mt-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Quelle prise en charge devant une hyperkaliémie sévère ?" required minLength={5} /></div><div><Label>Type de discussion</Label><select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm">{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div><div><Label>Votre question / votre discussion</Label><Textarea className="mt-1" value={content} onChange={(e) => setContent(e.target.value)} rows={8} placeholder="Présentez votre question sans inclure de donnée identifiante d’un patient réel." required minLength={10} /></div><p className="text-xs text-muted-foreground">⚠️ Cet espace est pédagogique. Ne publiez aucune donnée personnelle de patient réel.</p><Button type="submit" className="w-full" disabled={loading}>{loading ? "Publication…" : "Publier la discussion"}</Button></form></DialogContent></Dialog>;
+  return <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-4xl flex-col gap-4">
+    <Link to="/salle-de-garde" className="inline-flex w-fit items-center gap-2 text-sm text-primary hover:underline"><ArrowLeft className="h-4 w-4" />Tous les services</Link>
+    <section className="flex items-center gap-3 rounded-2xl border bg-card p-4 shadow-[var(--shadow-soft)]">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary"><MessageCircle className="h-6 w-6" /></div>
+      <div className="min-w-0 flex-1"><h1 className="font-serif text-2xl">{name}</h1><p className="text-sm text-muted-foreground">Groupe scientifique · {specialties?.find((s) => s.id === specialty)?.participants_count ?? 0} participants</p></div>
+      <Badge variant="secondary">Messages et réactions</Badge>
+    </section>
+    <p className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-xs">Ne partagez aucune donnée permettant d’identifier un patient réel.</p>
+
+    <section className="flex min-h-[45vh] flex-1 flex-col rounded-2xl border bg-secondary/20 p-3 sm:p-5">
+      <div className="flex-1 space-y-4 overflow-y-auto">
+        {isLoading ? <p className="py-12 text-center text-muted-foreground">Chargement des messages…</p> : messages.length ? messages.map((message) => {
+          const counts = Object.fromEntries(reactions.map(({ type }) => [type, message.reactions?.filter((r) => r.type === type).length ?? 0]));
+          return <article key={message.id} className="max-w-[92%] rounded-2xl border bg-card p-4 shadow-sm sm:max-w-[85%]">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"><strong>{message.author?.name ?? "Membre Kymia"}</strong>{message.author?.profession && <span className="text-muted-foreground">{message.author.profession}</span>}<time className="ml-auto text-muted-foreground">{new Date(message.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}</time></div>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6">{message.content}</p>
+            <div className="mt-3 flex flex-wrap gap-2 border-t pt-3">{reactions.map(({ type, label, Icon }) => <Button key={type} variant="outline" size="sm" className="h-8 rounded-full px-3" disabled={reactMut.isPending} onClick={() => reactMut.mutate({ id: message.id, type })}><Icon className="mr-1.5 h-3.5 w-3.5" />{label}{counts[type] > 0 && <span className="ml-1">{counts[type]}</span>}</Button>)}</div>
+          </article>;
+        }) : <div className="grid min-h-[35vh] place-content-center text-center"><MessageCircle className="mx-auto h-8 w-8 text-primary" /><h2 className="mt-3 font-serif text-xl">Le groupe est prêt</h2><p className="mt-1 text-sm text-muted-foreground">Lancez le premier débat scientifique.</p></div>}
+      </div>
+      <form className="mt-4 flex items-end gap-2 border-t pt-4" onSubmit={(e) => { e.preventDefault(); if (content.trim().length >= 2) sendMut.mutate(); }}>
+        <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Écrivez un message au groupe…" rows={2} maxLength={10000} className="max-h-36 min-h-12 resize-y bg-background" disabled={sendMut.isPending} />
+        <Button type="submit" size="icon" className="h-12 w-12 shrink-0 rounded-full" aria-label="Envoyer le message" disabled={sendMut.isPending || content.trim().length < 2}>{sendMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</Button>
+      </form>
+    </section>
+  </div>;
 }
