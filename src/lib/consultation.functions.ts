@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { generateText } from "ai";
+import { generateText, Output } from "ai";
 import { createLovableAiGatewayProvider, getDefaultAiModel } from "@/lib/ai-gateway.server";
 import { SPECIALTIES, EXAM_CATEGORIES } from "@/lib/specialties";
 import { getSubspecialty } from "@/lib/subspecialties";
@@ -64,6 +64,25 @@ function extractJson<T>(text: string): T {
   if (start === -1 || end === -1) throw new Error("Réponse IA non JSON");
   return JSON.parse(raw.slice(start, end + 1)) as T;
 }
+
+const caseOutputSchema = z.object({
+  patient: z.object({
+    age: z.number().int(),
+    sex: z.enum(["M", "F"]),
+    name: z.string(),
+    profession: z.string().optional(),
+  }),
+  chief_complaint: z.string(),
+  hidden_diagnosis: z.string(),
+  hidden_pathophysiology: z.string(),
+  key_history: z.array(z.string()).max(8),
+  key_findings: z.array(z.string()).max(8),
+  expected_exams: z.array(z.string()).max(8),
+  red_herrings: z.array(z.string()).max(6),
+  difficulty: z.string(),
+  opening_line: z.string(),
+  subspecialty: z.string().optional(),
+});
 
 // AI-generated and legacy JSON can contain a single string instead of an
 // array. Normalize it before it is stored or interpolated into a prompt.
@@ -170,8 +189,15 @@ Réponds STRICTEMENT en JSON valide selon ce schéma :
 }${langDirective(lang)}`;
 
     async function generateCase(extra: string): Promise<CaseData> {
-      const { text } = await generateText({ model, prompt: buildPrompt(extra), temperature: 0.7, maxOutputTokens: 800 });
-      return normalizeCaseData(extractJson<CaseData>(text));
+      const { output } = await generateText({
+        model,
+        prompt: buildPrompt(extra),
+        output: Output.object({ schema: caseOutputSchema, name: "clinical_case" }),
+        temperature: 0.7,
+        maxOutputTokens: 800,
+      });
+      if (!output) throw new Error("Le modèle n'a pas généré de cas clinique.");
+      return normalizeCaseData(output as CaseData);
     }
 
     // Une seule génération: le plan évite déjà les pathologies vues récemment.
