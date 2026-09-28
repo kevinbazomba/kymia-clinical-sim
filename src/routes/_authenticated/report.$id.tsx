@@ -72,6 +72,14 @@ function ReportPage() {
   const messages = ((data as any).messages ?? []) as { role: string; content: string }[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const exams = ((data as any).exams ?? {}) as Record<string, { name: string; result: string }[]>;
+  const omissions = [
+    ...r.missed_questions.map((item) => `Clinique — ${item}`),
+    ...r.missed_exams.map((item) => `Paraclinique — ${item}`),
+  ];
+  const improvements = [
+    ...r.weaknesses,
+    ...r.unnecessary_exams.map((item) => `Vous avez demandé un examen inutile : ${item}`),
+  ];
 
   return (
     <div className="space-y-6 print:space-y-3" id="kymia-report-root">
@@ -134,10 +142,8 @@ function ReportPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <ListCard icon={<CheckCircle2 className="h-5 w-5 text-success" />} title="Points forts" items={r.strengths} />
-        <ListCard icon={<AlertTriangle className="h-5 w-5 text-warning" />} title="À améliorer" items={r.weaknesses} />
-        <ListCard icon={<XCircle className="h-5 w-5 text-destructive" />} title="Questions oubliées" items={r.missed_questions} />
-        <ListCard icon={<XCircle className="h-5 w-5 text-destructive" />} title="Examens manqués" items={r.missed_exams} />
-        <ListCard icon={<AlertTriangle className="h-5 w-5 text-warning" />} title="Examens inutiles" items={r.unnecessary_exams} />
+        <ListCard icon={<XCircle className="h-5 w-5 text-destructive" />} title="Oublis (clinique et paraclinique)" items={omissions} />
+        <ListCard icon={<AlertTriangle className="h-5 w-5 text-warning" />} title="À améliorer" items={improvements} />
         <ListCard icon={<Lightbulb className="h-5 w-5 text-gold" />} title="Conseils personnalisés" items={[r.advice]} />
       </div>
 

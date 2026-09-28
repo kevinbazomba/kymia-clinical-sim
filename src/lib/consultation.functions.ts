@@ -93,6 +93,49 @@ function normalizeStringList(value: unknown): string[] {
   return [];
 }
 
+function countDoctorQuestions(messages: ChatMessage[]): number {
+  const interrogative = /\b(?:qu(?:i|el(?:le)?s?)|comment|combien|quand|depuis quand|où|avez[- ]vous|avez[- ]tu|as[- ]tu|est[- ]ce que|souffrez[- ]vous|prenez[- ]vous|y a[- ]t[- ]il|have you|do you|did you|how|when|where|what|which)\b/gi;
+  return messages
+    .filter((message) => message.role === "user")
+    .reduce((total, message) => {
+      const text = message.content.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const punctuationCount = (text.match(/[?؟]/g) ?? []).length;
+      const cueCount = (text.match(interrogative) ?? []).length;
+      return total + Math.max(punctuationCount, cueCount);
+    }, 0);
+}
+
+function enforceInterviewScoring(report: Report, questionCount: number): Report {
+  const removeSeverityTag = (item: string) => item.replace(/^\[(?:GRAVE|IMPORTANTE|MINEURE)\]\s*/i, "");
+  report.strengths = (report.strengths ?? []).map(removeSeverityTag);
+  report.weaknesses = (report.weaknesses ?? []).map(removeSeverityTag);
+  report.missed_questions = (report.missed_questions ?? []).map(removeSeverityTag);
+  report.missed_exams = (report.missed_exams ?? []).map(removeSeverityTag);
+  report.unnecessary_exams = (report.unnecessary_exams ?? []).map(removeSeverityTag);
+
+  const ceilings = questionCount === 0 ? 0 : questionCount === 1 ? 15 : questionCount === 2 ? 30 : questionCount < 5 ? 55 : 100;
+  report.interrogation_quality = Math.min(Number(report.interrogation_quality) || 0, ceilings);
+
+  const globalCeiling = questionCount === 0 ? 25 : questionCount === 1 ? 40 : questionCount === 2 ? 55 : questionCount < 5 ? 70 : 100;
+  report.score = Math.min(Number(report.score) || 0, globalCeiling);
+
+  if (questionCount === 0) {
+    const criticalGap = "Vous n'avez posé aucune question au patient. Votre diagnostic repose donc sur une supposition, sans interrogatoire clinique.";
+    const firstQuestions = "Vous auriez dû commencer par préciser le motif, son début, son évolution et les signes associés.";
+    report.strengths = (report.strengths ?? []).filter((item) => !/(question|interrog|anamn|patient|symptom)/i.test(item));
+    report.weaknesses = report.weaknesses?.includes(criticalGap) ? report.weaknesses : [criticalGap, ...(report.weaknesses ?? [])];
+    if (!report.missed_questions?.includes(criticalGap) || !report.missed_questions?.includes(firstQuestions)) {
+      report.missed_questions = [criticalGap, firstQuestions, ...(report.missed_questions ?? []).filter((item) => item !== criticalGap && item !== firstQuestions)];
+    }
+    if (!report.full_explanation?.includes(criticalGap)) report.full_explanation = `${criticalGap}\n\n${report.full_explanation ?? ""}`;
+    if (!report.advice?.startsWith("Avant tout diagnostic,")) {
+      report.advice = `Avant tout diagnostic, interrogez le patient de façon structurée : motif et chronologie, symptômes associés, antécédents, traitements et signes de gravité. ${report.advice ?? ""}`;
+    }
+  }
+
+  return report;
+}
+
 function listToText(value: unknown) {
   return normalizeStringList(value).join(" ; ");
 }
@@ -154,6 +197,7 @@ ${subSpecLabel ? `Sous-spécialité IMPOSÉE : ${subSpecLabel}. Le cas DOIT rele
 
 CAHIER DES CHARGES DU CAS (à respecter impérativement) :
 - Pathologie cachée IMPOSÉE : ${plan.pathology.label}
+${plan.replay ? `REPRISE PÉDAGOGIQUE : reprendre la même pathologie qu'un cas antérieur noté ${plan.replay.score}/100, mais créer un cas réellement différent. Ancien motif : ${plan.replay.previousComplaint ?? "inconnu"}. Ancien angle : ${plan.replay.previousAngle ?? "inconnu"}. Change le motif d'arrivée, les premiers signes, le contexte et l'angle clinique; ne réutilise pas l'ancien récit.\n` : ""}
 - Angle de présentation IMPOSÉ : ${plan.angle}
 - Tranche d'âge : ${plan.ageBandLabel} (âge exact entre ${plan.ageMin} et ${plan.ageMax})
 - Sexe : ${plan.sex === "M" ? "masculin" : "féminin"}${plan.pregnancy ? " — patiente enceinte ou en post-partum (à intégrer de façon cliniquement cohérente)" : ""}
@@ -246,6 +290,7 @@ Réponds STRICTEMENT en JSON valide selon ce schéma :
         age: caseData.patient?.age ?? null,
         sex: caseData.patient?.sex ?? null,
         difficulty: caseData.difficulty ?? plan.difficulty,
+        replay_of: plan.replay?.sourceConsultationId ?? null,
       } as never);
     } catch { /* ignore */ }
 
@@ -323,6 +368,27 @@ export const getConsultation = createServerFn({ method: "GET" })
     const { data: row, error } = await context.supabase
       .from("consultations").select("*").eq("id", data.id).single();
     if (error || !row) throw new Error("Consultation introuvable");
+    if (row.user_id !== context.userId) throw new Error("Accès refusé");
+    if (row.status === "completed" && row.report) {
+      const previousScore = Number(row.score ?? (row.report as Report).score) || 0;
+      const storedReport = row.report as Report;
+      const correctedReport = enforceInterviewScoring({ ...storedReport }, countDoctorQuestions((row.messages as ChatMessage[]) ?? []));
+      if (JSON.stringify(correctedReport) !== JSON.stringify(storedReport)) {
+        const { error: correctionError } = await context.supabase.from("consultations")
+          .update({ report: correctedReport as never, score: correctedReport.score })
+          .eq("id", data.id).eq("user_id", context.userId);
+        if (!correctionError && row.cycle === "second") {
+          const { data: profile } = await context.supabase.from("profiles").select("total_score").eq("id", context.userId).single();
+          if (profile) await context.supabase.from("profiles").update({
+            total_score: Math.max(0, (profile.total_score ?? 0) + correctedReport.score - previousScore),
+          }).eq("id", context.userId);
+        }
+        if (!correctionError) {
+          row.report = correctedReport;
+          row.score = correctedReport.score;
+        }
+      }
+    }
     const cd = row.case_data as unknown as CaseData;
     const safeCase = row.status === "completed" ? cd : {
       patient: cd.patient, chief_complaint: cd.chief_complaint, difficulty: cd.difficulty,
@@ -411,7 +477,7 @@ export const requestExam = createServerFn({ method: "POST" })
     }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
-      .from("consultations").select("case_data, exams, status, user_id, language").eq("id", data.id).single();
+      .from("consultations").select("case_data, exams, messages, status, user_id, language").eq("id", data.id).single();
     if (error || !row) throw new Error("Consultation introuvable");
     if (row.user_id !== context.userId) throw new Error("Accès refusé");
     if (row.status === "completed") throw new Error("Consultation terminée");
@@ -421,6 +487,34 @@ export const requestExam = createServerFn({ method: "POST" })
     const list = exams[data.category] ?? [];
     if (list.some((e) => e.name.toLowerCase() === data.name.toLowerCase())) {
       return { result: list.find((e) => e.name.toLowerCase() === data.name.toLowerCase())! };
+    }
+
+    const inferCustomCategory = (name: string) => {
+      const normalized = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      if (/radio|scanner|tomodens|\birm\b|imagerie|echograph|\bdoppler\b|radiolog|\brx\b/.test(normalized)) return "imaging";
+      if (/biolog|laboratoire|sang|urine|hemogram|\bnfs\b|numeration|creatinin|glycem|ionogram|serolog|transaminas|\bbilan\b|\bcrp\b|albumin|hemocultur|\becbu\b|parasitolog|\btsh\b/.test(normalized)) return "biology";
+      return null;
+    };
+    const chargedCategory = data.category === "custom" ? inferCustomCategory(data.name) : data.category;
+    const allExams = Object.values(exams).flat();
+    const biologyCount = allExams.filter((exam) => exam.category === "biology" || (exam.category === "custom" && inferCustomCategory(exam.name) === "biology")).length;
+    const imagingCount = allExams.filter((exam) => exam.category === "imaging" || (exam.category === "custom" && inferCustomCategory(exam.name) === "imaging")).length;
+    const exhaustedCategory = chargedCategory === "biology" && biologyCount >= 5
+      ? "biology"
+      : chargedCategory === "imaging" && imagingCount >= 4
+        ? "imaging"
+        : null;
+    if (exhaustedCategory) {
+      const lang = normalizeLang((row as { language?: string }).language);
+      const warning = lang === "en"
+        ? "Doctor, I'm sorry, my family can no longer afford more investigations.\n\n⚠️ Physician alert: the family's financial resources for investigations are exhausted. No further biological tests or imaging can be performed."
+        : "Docteur, je suis désolé, ma famille n'a plus les moyens de payer d'autres examens.\n\n⚠️ Avertissement au médecin : les moyens financiers de la famille pour les examens sont épuisés. Aucun examen biologique ni examen d'imagerie supplémentaire ne peut être réalisé.";
+      const messages = (row.messages as ChatMessage[] | null) ?? [];
+      const { error: messageError } = await context.supabase.from("consultations")
+        .update({ messages: [...messages, { role: "assistant", content: warning, ts: Date.now() }] as never })
+        .eq("id", data.id).eq("user_id", context.userId);
+      if (messageError) throw new Error(messageError.message);
+      return { financialBarrier: true, message: warning };
     }
 
     const gateway = getGateway();
@@ -516,6 +610,8 @@ CAS RÉEL :
 TRANSCRIPT :
 ${transcript || "(aucun)"}
 
+QUESTIONS RÉELLEMENT POSÉES PAR LE MÉDECIN : ${countDoctorQuestions(messages)}. Cette mesure est calculée à partir des seuls messages du médecin; ne compte ni les réponses du patient, ni les examens, ni le diagnostic soumis comme des questions.
+
 EXAMENS DEMANDÉS :
 ${examsList || "(aucun)"}
 
@@ -528,12 +624,16 @@ DIAGNOSTIC POSÉ :
 
 BARÈME STRICT (à respecter absolument) :
 - Diagnostic principal FAUX ou HORS SUJET → score global ≤ 25.
+- Si aucune question n'a été posée au patient, la sous-note d'interrogatoire doit être exactement 0/100 et le score global ne peut dépasser 25/100.
+- Une ou deux questions seulement ne constituent pas un interrogatoire : plafonne sévèrement la sous-note et le score global.
 - Diagnostic partiellement juste (famille correcte, pas le bon) → 40–55.
 - Diagnostic juste MAIS interrogatoire pauvre (< 5 questions pertinentes) ou examens essentiels oubliés → 55–70.
 - Diagnostic juste + interrogatoire structuré + examens pertinents + différentiels valables + PEC correcte → 75–88.
 - Excellence à TOUS niveaux (interrogatoire exhaustif, différentiels solides, examens optimaux sans superflu, PEC complète et justifiée) → 89–100.
 
 Pénalise fermement : questions cruciales oubliées, examens inutiles, mauvais raisonnement, PEC incomplète. Un utilisateur ne doit obtenir une note élevée QUE si sa démarche est réellement excellente.
+
+Parle directement à l'apprenant en utilisant « vous ». Explique ce qu'il a fait ou omis, pourquoi cela pose problème dans ce cas précis, et quelle démarche il aurait dû suivre. Écris comme un professeur qui conduit un débriefing après une vraie consultation, avec un ton direct, exigeant et pédagogique. Ne classe pas les erreurs avec des étiquettes. Ne crédite jamais une question, un examen clinique ou un signe que l'apprenant n'a pas recherché. N'invente aucun point fort : chaque compliment doit être prouvé par une action du transcript.
 
 Chaque sous-note (0-100) doit être cohérente avec le score global et respecter le barème ci-dessus.
 
@@ -562,7 +662,7 @@ Réponds STRICTEMENT en JSON valide :
     // The reference course is generated together with the correction so it is
     // immediately available on the report page after the consultation.
     const { text } = await generateText({ model, prompt, temperature: 0.2 });
-    const report = extractJson<Report>(text);
+    const report = enforceInterviewScoring(extractJson<Report>(text), countDoctorQuestions(messages));
     report.signed_by = "Kymia Motcho";
 
     await context.supabase.from("consultations").update({
@@ -583,14 +683,28 @@ Réponds STRICTEMENT en JSON valide :
       }).eq("id", context.userId);
     }
 
-    // Advisory coaching only: this does not alter access or the completed report.
-    // Supabase records the display decision so the same consultation never repeats it.
-    const { data: pedagogicalReminder, error: reminderError } = await context.supabase.rpc(
-      "should_show_pedagogical_reminder" as never,
-      { _consultation_id: data.id } as never,
-    );
-    if (reminderError) console.error("Unable to evaluate pedagogical reminder", reminderError.message);
-    return { report, cycle, pedagogical_reminder: !reminderError && pedagogicalReminder === true };
+    return { report, cycle };
+  });
+
+// Check before generating a new case, so the coaching prompt appears at launch.
+export const shouldShowConsultationStartReminder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("should_show_consultation_start_reminder" as never);
+    if (error) {
+      console.error("Unable to evaluate consultation start reminder", error.message);
+      return { show: false };
+    }
+    return { show: data === true };
+  });
+
+export const setConsultationReminderDisabled = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ disabled: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("set_pedagogical_reminder_disabled" as never, { _disabled: data.disabled } as never);
+    if (error) throw new Error(error.message);
+    return { success: true };
   });
 
 // ---------- Dashboard ----------

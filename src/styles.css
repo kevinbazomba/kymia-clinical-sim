@@ -205,6 +205,49 @@
   --ring: oklch(0.70 0.10 195);
 }
 
+[data-theme="mboa"] {
+  --background: oklch(0.965 0.025 82);
+  --foreground: oklch(0.24 0.035 48);
+  --surface: oklch(0.985 0.02 82);
+  --surface-foreground: oklch(0.24 0.035 48);
+  --card: oklch(0.99 0.015 82);
+  --card-foreground: oklch(0.24 0.035 48);
+  --popover: oklch(0.99 0.015 82);
+  --popover-foreground: oklch(0.24 0.035 48);
+  --primary: oklch(0.46 0.13 39);
+  --primary-foreground: oklch(0.99 0.015 82);
+  --primary-glow: oklch(0.62 0.14 52);
+  --secondary: oklch(0.91 0.05 83);
+  --secondary-foreground: oklch(0.31 0.055 47);
+  --muted: oklch(0.94 0.03 80);
+  --muted-foreground: oklch(0.45 0.04 53);
+  --accent: oklch(0.89 0.075 139);
+  --accent-foreground: oklch(0.27 0.055 139);
+  --gold: oklch(0.72 0.14 76);
+  --gold-foreground: oklch(0.25 0.04 48);
+  --destructive: oklch(0.52 0.19 27);
+  --destructive-foreground: oklch(0.99 0.01 80);
+  --success: oklch(0.48 0.12 145);
+  --success-foreground: oklch(0.99 0.01 80);
+  --warning: oklch(0.72 0.14 76);
+  --warning-foreground: oklch(0.25 0.04 48);
+  --border: oklch(0.84 0.04 70);
+  --input: oklch(0.86 0.035 72);
+  --ring: oklch(0.46 0.13 39);
+  --gradient-primary: linear-gradient(135deg, oklch(0.46 0.13 39), oklch(0.62 0.14 52));
+  --gradient-subtle: linear-gradient(180deg, oklch(0.965 0.025 82), oklch(0.94 0.04 118));
+  --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.86 0.10 74 / 0.52), transparent 72%);
+  --shadow-soft: 0 1px 2px oklch(0.30 0.05 45 / 0.05), 0 2px 8px oklch(0.30 0.05 45 / 0.05);
+  --shadow-card: 0 4px 16px -4px oklch(0.30 0.05 45 / 0.09), 0 2px 6px oklch(0.30 0.05 45 / 0.05);
+  --shadow-elegant: 0 20px 50px -20px oklch(0.46 0.13 39 / 0.24), 0 8px 20px -10px oklch(0.46 0.13 39 / 0.16);
+}
+
+html[data-theme="mboa"] body {
+  background-image:
+    repeating-linear-gradient(45deg, color-mix(in oklch, var(--primary) 2.2%, transparent) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(-45deg, color-mix(in oklch, var(--gold) 2.2%, transparent) 0 1px, transparent 1px 28px);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);

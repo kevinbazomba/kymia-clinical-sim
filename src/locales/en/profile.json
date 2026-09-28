@@ -11,6 +11,16 @@
     "countryPlaceholder": "France",
     "save": "Save"
   },
+  "theme": {
+    "title": "Appearance",
+    "description": "Choose a comfortable theme for consultations and study.",
+    "whiteTitle": "White",
+    "whiteDescription": "The current light theme, soft and bright.",
+    "darkTitle": "Dark",
+    "darkDescription": "Restful black and gray tones with readable contrast.",
+    "mboaTitle": "Mboa",
+    "mboaDescription": "Savanna, earth, and vegetation colors with a subtle pattern."
+  },
   "toast": {
     "updated": "Profile updated",
     "error": "Error"

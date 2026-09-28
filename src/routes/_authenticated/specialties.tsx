@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { createConsultation } from "@/lib/consultation.functions";
+import { createConsultation, shouldShowConsultationStartReminder, setConsultationReminderDisabled } from "@/lib/consultation.functions";
 import { SPECIALTIES, specialtyLabel, specialtyDescription } from "@/lib/specialties";
 import { useState } from "react";
 import { Loader2, Stethoscope, Scissors, Baby, HeartPulse, Brain, Siren, AlertTriangle } from "lucide-react";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { CycleDialog } from "./subspecialties.$specialty";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
+import { PedagogicalCoachDialog } from "@/components/PedagogicalCoachDialog";
 
 const ICONS = { Stethoscope, Scissors, Baby, HeartPulse, Brain, Siren };
 const WHATSAPP_URL = "https://wa.me/243990918446";
@@ -24,12 +25,16 @@ export const Route = createFileRoute("/_authenticated/specialties")({
 function SpecialtiesPage() {
   const { t, lang } = useI18n();
   const create = useServerFn(createConsultation);
+  const checkReminder = useServerFn(shouldShowConsultationStartReminder);
+  const disableReminder = useServerFn(setConsultationReminderDisabled);
   const navigate = useNavigate();
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<null | "suspended" | "account_suspended">(null);
   const [pickCycleFor, setPickCycleFor] = useState<string | null>(null);
+  const [pendingLaunch, setPendingLaunch] = useState<{ specialty: string; cycle: "premier" | "second" } | null>(null);
+  const [showReminder, setShowReminder] = useState(false);
 
-  async function start(specialty: string, cycle: "premier" | "second") {
+  async function createCase(specialty: string, cycle: "premier" | "second") {
     setLoadingId(specialty);
     try {
       const { id } = await create({ data: { specialty, cycle } });
@@ -48,6 +53,28 @@ function SpecialtiesPage() {
     }
   }
 
+  async function start(specialty: string, cycle: "premier" | "second") {
+    setLoadingId(specialty);
+    try {
+      const { show } = await checkReminder();
+      if (show) {
+        setPendingLaunch({ specialty, cycle });
+        setShowReminder(true);
+        return;
+      }
+    } catch (e) {
+      console.error("Unable to check consultation reminder", e);
+    }
+    await createCase(specialty, cycle);
+  }
+
+  async function continueLaunch() {
+    setShowReminder(false);
+    const launch = pendingLaunch;
+    setPendingLaunch(null);
+    if (launch) await createCase(launch.specialty, launch.cycle);
+  }
+
   function handleClick(specialty: string) {
     if (specialty === "medecine_interne") {
       navigate({ to: "/subspecialties/$specialty", params: { specialty } });
@@ -58,6 +85,11 @@ function SpecialtiesPage() {
 
   return (
     <>
+      <PedagogicalCoachDialog
+        open={showReminder}
+        onContinue={continueLaunch}
+        onDisableReminder={async () => { await disableReminder({ data: { disabled: true } }); }}
+      />
       <Dialog open={blocked !== null} onOpenChange={(v) => !v && setBlocked(null)}>
         <DialogContent>
           <DialogHeader>

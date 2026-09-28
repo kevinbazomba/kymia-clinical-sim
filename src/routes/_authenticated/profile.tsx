@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Crown, Loader2, Trophy } from "lucide-react";
+import { Crown, Loader2, Moon, Palette, Sun, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
 import { LanguageSettings } from "@/components/LanguageSwitch";
+import { useTheme, type AppTheme } from "@/lib/theme";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: makeT(getStoredLang())("profile.meta.title") }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function ProfilePage() {
   const { t, lang } = useI18n();
+  const { theme, setTheme } = useTheme();
   const dashFn = useServerFn(getDashboard);
   const updFn = useServerFn(updateProfile);
   const qc = useQueryClient();
@@ -87,6 +89,36 @@ function ProfilePage() {
           {t("profile.form.save")}
         </Button>
       </form>
+
+      <section className="rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)]">
+        <div>
+          <h2 className="font-serif text-2xl">{t("profile.theme.title")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("profile.theme.description")}</p>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t("profile.theme.title")}>
+          {([
+            { id: "white", title: t("profile.theme.whiteTitle"), description: t("profile.theme.whiteDescription"), Icon: Sun, swatches: ["bg-stone-50", "bg-white", "bg-teal-800"] },
+            { id: "dark", title: t("profile.theme.darkTitle"), description: t("profile.theme.darkDescription"), Icon: Moon, swatches: ["bg-zinc-950", "bg-zinc-800", "bg-teal-300"] },
+            { id: "mboa", title: t("profile.theme.mboaTitle"), description: t("profile.theme.mboaDescription"), Icon: Palette, swatches: ["bg-amber-100", "bg-orange-800", "bg-green-800"] },
+          ] as const).map(({ id, title, description, Icon, swatches }) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={theme === id}
+              onClick={() => setTheme(id as AppTheme)}
+              className={`rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${theme === id ? "border-primary bg-primary/5 shadow-[var(--shadow-soft)]" : "hover:bg-muted/60"}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-primary"><Icon className="h-4 w-4" /></span>
+                <span className="flex gap-1" aria-hidden="true">{swatches.map((color) => <i key={color} className={`h-3 w-3 rounded-full ${color}`} />)}</span>
+              </div>
+              <span className="mt-3 block font-semibold text-foreground">{title}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{description}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Stat label={t("profile.stats.consultations")} value={data?.total ?? 0} />

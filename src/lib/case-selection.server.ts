@@ -12,6 +12,9 @@ import {
 } from "@/lib/pathology-bank";
 
 export interface PriorCase {
+  consultation_id: string | null;
+  replay_of: string | null;
+  specialty: string;
   pathology_key: string;
   pathology_label: string;
   subspecialty: string | null;
@@ -21,6 +24,8 @@ export interface PriorCase {
   sex: string | null;
   difficulty: string | null;
   created_at: string;
+  presentation_angle: string | null;
+  score?: number | null;
 }
 
 export interface CasePlan {
@@ -36,6 +41,13 @@ export interface CasePlan {
   context: string;
   avoid: string[];
   nearMiss: boolean;
+  replay?: {
+    sourceConsultationId: string;
+    score: number;
+    previousComplaint: string | null;
+    previousAngle: string | null;
+    previousAge: number | null;
+  };
 }
 
 const rand = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -140,7 +152,7 @@ export async function planCase(opts: {
   // et aux contraintes du prompt de génération.
   const historyPromise = supabase
     .from("case_registry")
-    .select("pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,created_at")
+    .select("consultation_id,replay_of,specialty,pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,presentation_angle,created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(60)
@@ -149,24 +161,43 @@ export async function planCase(opts: {
   const recent = await historyPromise;
 
   const recentInSpec = recent.filter((c) => true); // toutes spécialités pour la démographie
-  const subspecialty =
+  let subspecialty =
     opts.subspecialty ??
     (specialty === "medecine_interne"
       ? pickSubspecialty(recent.filter((c) => c.subspecialty))
       : null);
 
-  const { data: globalUsageData } = await supabase.rpc("global_pathology_usage", {
-    _specialty: specialty,
-    _subspecialty: subspecialty,
-  }).then((result: { data: { pathology_key: string; uses: number }[] | null }) => result)
-    .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] }));
+  const priorIds = recent.flatMap((c) => c.consultation_id ? [c.consultation_id] : []);
+  const [globalUsageResult, priorScoresResult] = await Promise.all([
+    supabase.rpc("global_pathology_usage", { _specialty: specialty, _subspecialty: subspecialty })
+      .then((result: { data: { pathology_key: string; uses: number }[] | null }) => result)
+      .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] })),
+    priorIds.length
+      ? supabase.from("consultations").select("id, score").in("id", priorIds)
+          .then(({ data }: { data: { id: string; score: number | null }[] | null }) => data ?? [])
+          .catch(() => [] as { id: string; score: number | null }[])
+      : Promise.resolve([] as { id: string; score: number | null }[]),
+  ]);
+
+  const scoreByConsultation = new Map(priorScoresResult.map((item) => [item.id, item.score]));
+  const replayedConsultations = new Set(recent.flatMap((c) => c.replay_of ? [c.replay_of] : []));
+  const replayCandidate = recent.find((c) => {
+    const score = c.consultation_id ? scoreByConsultation.get(c.consultation_id) : null;
+    return c.specialty === specialty && c.consultation_id && !replayedConsultations.has(c.consultation_id)
+      && score != null && score < 60
+      && (!opts.subspecialty || c.subspecialty === opts.subspecialty);
+  });
+  if (replayCandidate && !opts.subspecialty) subspecialty = replayCandidate.subspecialty;
 
   const bank = getBank(specialty, subspecialty);
   const recentSameBank = recent.filter((c) => bank.some((b) => b.key === c.pathology_key));
+  const replayCase = replayCandidate && recentSameBank.some((c) => c.consultation_id === replayCandidate.consultation_id)
+    ? replayCandidate
+    : undefined;
 
   // 2) usage global (rotation plateforme)
   const usage = new Map<string, number>();
-  (globalUsageData ?? []).forEach((r) => usage.set(r.pathology_key, Number(r.uses) || 0));
+  (globalUsageResult.data ?? []).forEach((r) => usage.set(r.pathology_key, Number(r.uses) || 0));
   const totalUses = [...usage.values()].reduce((a, b) => a + b, 0);
   const avgUses = totalUses / Math.max(1, bank.length);
 
@@ -191,11 +222,16 @@ export async function planCase(opts: {
       globalPenalty(item.key, usage, avgUses) *
       (0.75 + Math.random() * 0.5),
   }));
-  const pathology = weightedPick(scored);
+  const pathology = replayCase
+    ? bank.find((item) => item.key === replayCase.pathology_key) ?? weightedPick(scored)
+    : weightedPick(scored);
 
   // 4) présentation, démographie, contexte, difficulté
   const band = pickAgeBand(pathology, specialty, recentInSpec);
-  const age = band.min === band.max ? band.min : band.min + Math.floor(Math.random() * (band.max - band.min + 1));
+  let age = band.min === band.max ? band.min : band.min + Math.floor(Math.random() * (band.max - band.min + 1));
+  if (replayCase?.age != null && age === replayCase.age && band.max > band.min) {
+    age = age < band.max ? age + 1 : age - 1;
+  }
 
   const constraints = pathologyConstraints(pathology.label);
   let sex: "M" | "F" = Math.random() < 0.5 ? "M" : "F";
@@ -205,6 +241,9 @@ export async function planCase(opts: {
   }
   if (specialty === "gynecologie") sex = "F";
   if (constraints.sex) sex = constraints.sex;
+  if (replayCase?.sex && !constraints.sex && sex === replayCase.sex) {
+    sex = sex === "F" ? "M" : "F";
+  }
 
   const pregnancy =
     sex === "F" && age >= 16 && age <= 44 &&
@@ -215,7 +254,9 @@ export async function planCase(opts: {
   return {
     pathology,
     subspecialty,
-    angle: rand(PRESENTATION_ANGLES),
+    angle: replayCase
+      ? rand(PRESENTATION_ANGLES.filter((angle) => angle !== replayCase.presentation_angle))
+      : rand(PRESENTATION_ANGLES),
     ageBandLabel: band.label,
     ageMin: band.min,
     ageMax: band.max,
@@ -223,8 +264,15 @@ export async function planCase(opts: {
     pregnancy,
     difficulty: pickDifficulty(totalCases),
     context: rand(AFRICAN_CONTEXTS),
-    avoid: recentSameBank.slice(0, 12).map((c) => c.pathology_label || c.pathology_key),
-    nearMiss: wantNearMiss,
+    avoid: recentSameBank.filter((c) => c.pathology_key !== replayCase?.pathology_key).slice(0, 12).map((c) => c.pathology_label || c.pathology_key),
+    nearMiss: replayCase ? false : wantNearMiss,
+    replay: replayCase && replayCase.consultation_id ? {
+      sourceConsultationId: replayCase.consultation_id,
+      score: scoreByConsultation.get(replayCase.consultation_id) ?? 0,
+      previousComplaint: replayCase.chief_complaint,
+      previousAngle: replayCase.presentation_angle,
+      previousAge: replayCase.age,
+    } : undefined,
   };
 }
 

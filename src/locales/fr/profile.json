@@ -11,6 +11,16 @@
     "countryPlaceholder": "France",
     "save": "Enregistrer"
   },
+  "theme": {
+    "title": "Apparence",
+    "description": "Choisissez un thème confortable pour vos consultations et vos révisions.",
+    "whiteTitle": "Blanc",
+    "whiteDescription": "Le thème clair actuel, doux et lumineux.",
+    "darkTitle": "Sombre",
+    "darkDescription": "Des tons noirs et gris reposants, avec un contraste lisible.",
+    "mboaTitle": "Mboa",
+    "mboaDescription": "Des couleurs de savane, de terre et de végétation, avec un motif discret."
+  },
   "toast": {
     "updated": "Profil mis à jour",
     "error": "Erreur"
