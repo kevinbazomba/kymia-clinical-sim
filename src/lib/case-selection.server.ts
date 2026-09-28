@@ -26,6 +26,7 @@ export interface PriorCase {
   created_at: string;
   presentation_angle: string | null;
   score?: number | null;
+  consultations?: { score?: number | null } | null;
 }
 
 export interface CasePlan {
@@ -152,12 +153,20 @@ export async function planCase(opts: {
   // et aux contraintes du prompt de génération.
   const historyPromise = supabase
     .from("case_registry")
-    .select("consultation_id,replay_of,specialty,pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,presentation_angle,created_at")
+    .select("consultation_id,replay_of,specialty,pathology_key,pathology_label,subspecialty,diagnosis,chief_complaint,age,sex,difficulty,presentation_angle,created_at,consultations(score)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(60)
     .then(({ data }: { data: PriorCase[] | null }) => data ?? [])
     .catch(() => [] as PriorCase[]);
+  // For ordinary specialties the usage query does not depend on user history,
+  // so overlap it with the history read. Internal medicine needs its selected
+  // subspecialty first and starts that query just below.
+  const earlyUsagePromise = specialty !== "medecine_interne" || opts.subspecialty
+    ? supabase.rpc("global_pathology_usage", { _specialty: specialty, _subspecialty: opts.subspecialty ?? null })
+        .then((result: { data: { pathology_key: string; uses: number }[] | null }) => result)
+        .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] }))
+    : null;
   const recent = await historyPromise;
 
   const recentInSpec = recent.filter((c) => true); // toutes spécialités pour la démographie
@@ -167,19 +176,15 @@ export async function planCase(opts: {
       ? pickSubspecialty(recent.filter((c) => c.subspecialty))
       : null);
 
-  const priorIds = recent.flatMap((c) => c.consultation_id ? [c.consultation_id] : []);
-  const [globalUsageResult, priorScoresResult] = await Promise.all([
-    supabase.rpc("global_pathology_usage", { _specialty: specialty, _subspecialty: subspecialty })
-      .then((result: { data: { pathology_key: string; uses: number }[] | null }) => result)
-      .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] })),
-    priorIds.length
-      ? supabase.from("consultations").select("id, score").in("id", priorIds)
-          .then(({ data }: { data: { id: string; score: number | null }[] | null }) => data ?? [])
-          .catch(() => [] as { id: string; score: number | null }[])
-      : Promise.resolve([] as { id: string; score: number | null }[]),
-  ]);
-
-  const scoreByConsultation = new Map(priorScoresResult.map((item) => [item.id, item.score]));
+  const globalUsageResult = earlyUsagePromise
+    ? await earlyUsagePromise
+    : await supabase.rpc("global_pathology_usage", { _specialty: specialty, _subspecialty: subspecialty })
+        .catch(() => ({ data: [] as { pathology_key: string; uses: number }[] }));
+  const scoreByConsultation = new Map(recent.flatMap((item) => {
+    if (!item.consultation_id) return [];
+    const linked = item.consultations;
+    return [[item.consultation_id, linked?.score ?? null] as const];
+  }));
   const replayedConsultations = new Set(recent.flatMap((c) => c.replay_of ? [c.replay_of] : []));
   const replayCandidate = recent.find((c) => {
     const score = c.consultation_id ? scoreByConsultation.get(c.consultation_id) : null;

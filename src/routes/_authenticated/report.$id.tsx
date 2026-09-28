@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getConsultation } from "@/lib/consultation.functions";
+import { generateReferenceCourse, getConsultation } from "@/lib/consultation.functions";
 import { getSpecialty } from "@/lib/specialties";
 import { Loader2, Trophy, BookOpen, AlertTriangle, CheckCircle2, XCircle, Lightbulb, GraduationCap, Sparkles, Download, Library } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/report/$id")({
   head: () => ({ meta: [{ title: "Rapport pédagogique — Kymia" }] }),
@@ -49,7 +50,21 @@ interface ReportT {
 function ReportPage() {
   const { id } = Route.useParams();
   const fn = useServerFn(getConsultation);
+  const courseFn = useServerFn(generateReferenceCourse);
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["consultation", id], queryFn: () => fn({ data: { id } }) });
+  const courseMutation = useMutation({
+    mutationFn: () => courseFn({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["consultation", id] }),
+  });
+  const savedReport = data?.report as unknown as ReportT | null;
+  const needsCourse = data?.status === "completed" && !!savedReport && !savedReport.reference_course;
+
+  useEffect(() => {
+    if (needsCourse && !courseMutation.isPending && !courseMutation.isError && !courseMutation.isSuccess) {
+      courseMutation.mutate();
+    }
+  }, [needsCourse, courseMutation.isPending, courseMutation.isError, courseMutation.isSuccess, courseMutation.mutate]);
 
   if (isLoading || !data) {
     return <div className="flex h-[60vh] items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -167,6 +182,29 @@ function ReportPage() {
           <article className="prose prose-sm mt-6 max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:mt-6 prose-h2:text-primary prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-primary">
             <ReactMarkdown>{r.reference_course}</ReactMarkdown>
           </article>
+        </section>
+      )}
+
+      {!r.reference_course && (
+        <section className="rounded-3xl border-2 border-primary/30 bg-card p-6 shadow-[var(--shadow-card)] md:p-8">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[image:var(--gradient-primary)] text-primary-foreground"><Library className="h-6 w-6" /></div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-primary">Fiche de révision</p>
+              <h2 className="font-serif text-2xl md:text-3xl">Cours de référence — {cd?.hidden_diagnosis}</h2>
+            </div>
+          </div>
+          {courseMutation.isError ? (
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <span>La fiche n’a pas pu être chargée.</span>
+              <Button variant="outline" size="sm" onClick={() => { courseMutation.reset(); courseMutation.mutate(); }}>Réessayer</Button>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground" role="status">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Préparation de la fiche de révision…
+            </div>
+          )}
         </section>
       )}
 

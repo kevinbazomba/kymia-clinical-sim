@@ -637,8 +637,6 @@ Parle directement à l'apprenant en utilisant « vous ». Explique ce qu'il a fa
 
 Chaque sous-note (0-100) doit être cohérente avec le score global et respecter le barème ci-dessus.
 
-Le champ "reference_course" est obligatoire : rédige un véritable cours de révision détaillé sur la pathologie diagnostiquée, en Markdown structuré avec des titres. Il doit couvrir la définition, la physiopathologie, les facteurs de risque, la clinique, la démarche diagnostique, la prise en charge, les complications, le pronostic et les points clés à retenir. Adapte-le au contexte africain lorsque cela est pertinent.
-
 Réponds STRICTEMENT en JSON valide :
 {
   "score": <0-100>,
@@ -655,35 +653,75 @@ Réponds STRICTEMENT en JSON valide :
   "expert_approach": "démarche d'expert étape par étape",
   "full_explanation": "explication pédagogique complète, signée Kymia Motcho",
   "pathophysiology": "physiopathologie détaillée",
-  "advice": "conseils personnalisés — signés Kymia Motcho",
-  "reference_course": "cours détaillé en Markdown sur la pathologie : définition, physiopathologie, épidémiologie/facteurs de risque, clinique, diagnostic, examens complémentaires, prise en charge, complications, pronostic et points clés à retenir"
+  "advice": "conseils personnalisés — signés Kymia Motcho"
 }${langDirective(lang)}`;
 
-    // The reference course is generated together with the correction so it is
-    // immediately available on the report page after the consultation.
-    const { text } = await generateText({ model, prompt, temperature: 0.2 });
+    // Keep the correction response concise; the long reference course loads on
+    // the report page in a separate request after the learner can read feedback.
+    const statsPromise = cycle === "second"
+      ? context.supabase.from("profiles").select("total_score, consultations_count").eq("id", context.userId).single().then((result) => result)
+      : Promise.resolve(null);
+    const { text } = await generateText({ model, prompt, temperature: 0.2, maxOutputTokens: 3000 });
     const report = enforceInterviewScoring(extractJson<Report>(text), countDoctorQuestions(messages));
     report.signed_by = "Kymia Motcho";
+    report.reference_course = null;
 
-    await context.supabase.from("consultations").update({
-      diagnosis: data.diagnosis as never,
-      report: report as never,
-      score: report.score,
-      status: "completed",
-      completed_at: new Date().toISOString(),
-    }).eq("id", data.id);
+    const [saveResult, statsResult] = await Promise.all([
+      context.supabase.from("consultations").update({
+        diagnosis: data.diagnosis as never,
+        report: report as never,
+        score: report.score,
+        status: "completed",
+        completed_at: new Date().toISOString(),
+      }).eq("id", data.id),
+      statsPromise,
+    ]);
+    if (saveResult.error) throw new Error(saveResult.error.message);
 
-    // Only Second cycle consultations feed the world leaderboard / competitive stats
     if (cycle === "second") {
-      const { data: prof } = await context.supabase
-        .from("profiles").select("total_score, consultations_count").eq("id", context.userId).single();
+      const profile = statsResult?.data;
       await context.supabase.from("profiles").update({
-        total_score: (prof?.total_score ?? 0) + report.score,
-        consultations_count: (prof?.consultations_count ?? 0) + 1,
+        total_score: ((profile as { total_score?: number } | null)?.total_score ?? 0) + report.score,
+        consultations_count: ((profile as { consultations_count?: number } | null)?.consultations_count ?? 0) + 1,
       }).eq("id", context.userId);
     }
-
     return { report, cycle };
+  });
+
+// Generate the longer revision sheet after the fast correction is already
+// available to the learner on the report page.
+export const generateReferenceCourse = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase.from("consultations")
+      .select("case_data, report, user_id, status, language")
+      .eq("id", data.id).single();
+    if (error || !row) throw new Error("Consultation introuvable");
+    if (row.user_id !== context.userId) throw new Error("Accès refusé");
+    if (row.status !== "completed" || !row.report) throw new Error("Correction indisponible");
+
+    const report = row.report as Report;
+    if (report.reference_course?.trim()) return { reference_course: report.reference_course };
+    const cd = row.case_data as unknown as CaseData;
+    const { text } = await generateText({
+      model: getGateway()(getDefaultAiModel()),
+      temperature: 0.2,
+      maxOutputTokens: 1800,
+      prompt: `Rédige en ${normalizeLang(row.language) === "en" ? "anglais" : "français"} une fiche de révision clinique claire et fiable sur ${cd.hidden_diagnosis} pour un étudiant en médecine exerçant en Afrique subsaharienne.
+
+Utilise ces données cliniques comme contexte : physiopathologie ${cd.hidden_pathophysiology}; signes utiles ${listToText(cd.key_findings)}; examens attendus ${listToText(cd.expected_exams)}.
+
+Structure la fiche en Markdown avec des titres courts : définition, physiopathologie, facteurs de risque, présentation clinique, diagnostic et différentiels, examens, prise en charge, complications et points clés. Reste synthétique mais pratique, n'invente pas de recommandations locales précises, et distingue les mesures urgentes du suivi.`,
+    });
+    const reference_course = text.trim();
+    if (!reference_course) throw new Error("Impossible de générer la fiche de révision");
+    const nextReport = { ...report, reference_course };
+    const { error: saveError } = await context.supabase.from("consultations")
+      .update({ report: nextReport as never })
+      .eq("id", data.id).eq("user_id", context.userId);
+    if (saveError) throw new Error(saveError.message);
+    return { reference_course };
   });
 
 // Check before generating a new case, so the coaching prompt appears at launch.
