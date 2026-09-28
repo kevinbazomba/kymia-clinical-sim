@@ -1,77 +1,64 @@
-GUIDE — E-mails Supabase Auth avec Maileroo via Edge Function
-==============================================================
+GUIDE — Réinitialisation de mot de passe Kymia avec Brevo
+==========================================================
 
-Le site utilise déjà Supabase Auth pour demander et appliquer la
-réinitialisation du mot de passe. La fonction Edge `send-auth-email` remplace
-uniquement l’envoi des e-mails : le lien de récupération et les jetons restent
-générés et validés par Supabase.
+Le lien « Mot de passe oublié ? » est disponible sur la page de connexion.
+L'utilisateur saisit son e-mail, reçoit un lien sécurisé, puis choisit un
+nouveau mot de passe.
 
-PRÉPARER MAILEROO
------------------
+CONFIGURATION BREVO
+-------------------
 
-1. Dans https://app.maileroo.com/, ajouter le domaine d’envoi.
-2. Ajouter dans le DNS les enregistrements SPF, DKIM et DMARC indiqués par
-   Maileroo, puis attendre que le domaine soit vérifié.
-3. Ouvrir le domaine > « Sending Keys » > « New Key » et créer une clé nommée
-   par exemple `Supabase production`.
-4. Noter l’adresse d’expéditeur choisie, par exemple `no-reply@votredomaine`.
-5. Désactiver le suivi des clics et ouvertures pour ce domaine / ces e-mails :
-   un lien d’authentification ne doit pas être modifié par un outil de tracking.
+1. Créer ou ouvrir le compte Brevo.
+2. Valider l'adresse qui servira à envoyer les e-mails.
+3. Dans Brevo, aller dans SMTP & API > SMTP.
+4. Générer une nouvelle clé SMTP.
+   IMPORTANT : ne jamais partager cette clé ni la mettre dans le code source.
 
-INSTALLER LA FONCTION DANS SUPABASE
------------------------------------
-
-1. Dans Supabase : Edge Functions > « Deploy a new function » > « Via Editor ».
-2. Nommer la fonction `send-auth-email`.
-3. Copier le contenu de `supabase/functions/send-auth-email/index.ts` dans
-   l’éditeur, puis cliquer sur Deploy.
-4. Dans Edge Functions > Secrets, créer ces secrets (sans les ajouter au code) :
-
-   - `MAILEROO_SENDING_KEY` : la Sending Key Maileroo créée à l’étape 3.
-   - `MAILEROO_SENDER_EMAIL` : l’adresse validée, par exemple
-     `no-reply@votredomaine`.
-   - `MAILEROO_SENDER_NAME` : `Kymia Clinical Sim`.
-   - `SEND_EMAIL_HOOK_SECRET` : le secret généré à l’étape suivante, au format
-     complet `v1,whsec_...`.
-
-ACTIVER LE HOOK D’AUTHENTIFICATION
-----------------------------------
-
-1. Dans Supabase : Authentication > Hooks.
-2. Créer un hook « Send Email » de type HTTPS.
-3. Utiliser l’URL de la fonction :
-   `https://xkbtyljhwxbepmptsjed.supabase.co/functions/v1/send-auth-email`
-4. Cliquer sur « Generate Secret », copier le secret dans
-   `SEND_EMAIL_HOOK_SECRET` (Edge Functions > Secrets), puis enregistrer le hook.
-5. Vérifier que le fournisseur e-mail de Supabase reste activé : avec le hook,
-   l’e-mail est envoyé par la fonction et non par SMTP.
-
-CONFIGURATION DES URLS
+CONFIGURATION SUPABASE
 ----------------------
+
+Dans Authentication > Emails > SMTP Settings, activer « Enable custom SMTP »
+puis renseigner :
+
+- Host : smtp-relay.brevo.com
+- Port : 587
+- Username : le SMTP login affiché par Brevo
+- Password : la clé SMTP générée par Brevo
+- Sender email address : l'adresse validée dans Brevo
+- Sender name : Kymia Clinical Sim
 
 Dans Authentication > URL Configuration :
 
-- Site URL : l’adresse publique principale du site.
-- Redirect URLs : ajouter `https://votre-domaine/reset-password`.
-- Pour le développement local, ajouter aussi
-  `http://localhost:5173/reset-password`.
+- Site URL : l'adresse principale du site publié
+  Exemple : https://www.kymia.com
+
+- Redirect URLs : ajouter l'adresse du site suivie de /reset-password
+  Exemple : https://www.kymia.com/reset-password
+
+Pour les essais locaux, ajouter aussi l'adresse affichée par Vite, par exemple :
+http://localhost:5173/reset-password
+
+IMPORTANT
+---------
+
+Dans Authentication > Hooks, désactiver ou supprimer le hook « Send Email »
+créé pour Maileroo. Sinon Supabase continuera d'appeler cette fonction au lieu
+du SMTP Brevo.
 
 TEST
 ----
 
-1. Ouvrir la page de connexion puis « Mot de passe oublié ? ».
-2. Demander le lien pour un compte de test.
-3. Vérifier dans les logs de la fonction et dans Maileroo que le message est
-   accepté.
-4. Ouvrir le lien et choisir un nouveau mot de passe.
-5. Se reconnecter avec ce mot de passe.
+1. Ouvrir la page de connexion Kymia.
+2. Cliquer sur « Mot de passe oublié ? ».
+3. Saisir l'adresse d'un compte utilisateur.
+4. Ouvrir l'e-mail reçu et cliquer sur le lien.
+5. Choisir puis confirmer le nouveau mot de passe.
+6. Se reconnecter avec ce nouveau mot de passe.
 
 SÉCURITÉ
 --------
 
-- Ne jamais mettre de Sending Key Maileroo, de secret de hook ou de mot de passe
-  SMTP dans `.env` public, le frontend ou Git.
-- La fonction vérifie la signature Standard Webhooks de Supabase avant tout
-  envoi ; elle accepte donc seulement les demandes émises par Supabase Auth.
-- Le formulaire garde une réponse neutre pour ne pas révéler si une adresse
-  e-mail possède un compte.
+- Ne jamais envoyer une clé SMTP ou un mot de passe dans un message.
+- Ne jamais stocker ces secrets dans le code ou dans Git.
+- Le message de récupération reste volontairement neutre : il ne confirme pas
+  qu'une adresse e-mail possède un compte.
