@@ -17,7 +17,8 @@ CONFIGURATION BREVO
 CONFIGURATION SUPABASE
 ----------------------
 
-Dans Authentication > Emails > SMTP Settings, renseigner :
+Dans Authentication > Emails > SMTP Settings, activer « Enable custom SMTP »
+puis renseigner :
 
 - Host : smtp-relay.brevo.com
 - Port : 587
@@ -37,6 +38,13 @@ Dans Authentication > URL Configuration :
 Pour les essais locaux, ajouter aussi l'adresse affichée par Vite, par exemple :
 http://localhost:5173/reset-password
 
+IMPORTANT
+---------
+
+Dans Authentication > Hooks, désactiver ou supprimer le hook « Send Email »
+créé pour Maileroo. Sinon Supabase continuera d'appeler cette fonction au lieu
+du SMTP Brevo.
+
 TEST
 ----
 
@@ -47,7 +55,7 @@ TEST
 5. Choisir puis confirmer le nouveau mot de passe.
 6. Se reconnecter avec ce nouveau mot de passe.
 
-SECURITE
+SÉCURITÉ
 --------
 
 - Ne jamais envoyer une clé SMTP ou un mot de passe dans un message.
