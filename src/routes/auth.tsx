@@ -227,14 +227,7 @@ function SigninForm({ onDone, onSwitchSignup, onReset }: { onDone: () => void; o
       toast.success(t("auth.signin.welcome"));
       onDone();
     } catch (err: unknown) {
-<<<<<<< HEAD
-      const message = err instanceof Error ? err.message : "";
-      toast.error(message.toLowerCase().includes("invalid login credentials")
-        ? t("auth.signin.invalidCredentials")
-        : message || t("auth.signin.unknownError"));
-=======
       toast.error(authErrorMessage(err, t("auth.signin.unknownError")));
->>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
     } finally {
       setLoading(false);
     }
@@ -406,16 +399,6 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
         // the user to a protected route, as they have no session yet.
         setSuccess("confirmation-required");
       }
-<<<<<<< HEAD
-      if (signUp.session) {
-        setSuccess(true);
-        toast.success(t("auth.signup.success.toast"));
-        onDone();
-      } else {
-        setSuccess(true);
-      }
-=======
->>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
     } catch (err) {
       toast.error(authErrorMessage(err, t("auth.signup.unknownError")));
       setLoading(false);
@@ -428,11 +411,6 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
         <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600 animate-scale-in">
           <CheckCircle2 className="h-12 w-12" strokeWidth={2} />
         </div>
-<<<<<<< HEAD
-        <p className="mt-6 font-serif text-2xl text-foreground">{t("auth.signup.success.title")}</p>
-        <p className="mt-2 text-center text-sm text-muted-foreground">{t("auth.signup.success.subtitle")}</p>
-        <Button variant="outline" className="mt-6" onClick={onSwitchSignin}>{t("auth.signup.success.signIn")}</Button>
-=======
         <p className="mt-6 font-serif text-2xl text-foreground">
           {success === "signed-in" ? t("auth.signup.success.title") : "Confirmez votre adresse e-mail"}
         </p>
@@ -441,7 +419,6 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
             ? t("auth.signup.success.subtitle")
             : "Un lien d’activation vient d’être envoyé. Ouvrez-le pour finaliser votre inscription, puis connectez-vous."}
         </p>
->>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
       </div>
     );
   }

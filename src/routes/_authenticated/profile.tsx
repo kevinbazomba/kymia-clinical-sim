@@ -55,7 +55,12 @@ function ProfilePage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <header>
         <h1 className="font-serif text-4xl">{t("profile.header.title")}</h1>
-        <p className="text-muted-foreground">{t("profile.header.subtitle")}</p>
+        <p className="mt-1 text-muted-foreground">{t("profile.header.subtitle")}</p>
+        {data?.profile?.display_name && (
+          <p className="mt-3 inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-sm font-semibold text-foreground">
+            {data.profile.display_name}
+          </p>
+        )}
       </header>
 
       <form
