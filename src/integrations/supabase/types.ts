@@ -365,6 +365,18 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_user_assessments: {
+        Row: { administrator_id: string; rating: string; updated_at: string; user_id: string }
+        Insert: { administrator_id: string; rating: string; updated_at?: string; user_id: string }
+        Update: { administrator_id?: string; rating?: string; updated_at?: string; user_id?: string }
+        Relationships: []
+      }
+      admin_user_messages: {
+        Row: { administrator_id: string; created_at: string; id: string; message: string; read_at: string | null; sender_name: string; user_id: string }
+        Insert: { administrator_id: string; created_at?: string; id?: string; message: string; read_at?: string | null; sender_name?: string; user_id: string }
+        Update: { administrator_id?: string; created_at?: string; id?: string; message?: string; read_at?: string | null; sender_name?: string; user_id?: string }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -452,6 +464,12 @@ export type Database = {
         }
         Relationships: []
       }
+      user_presence: {
+        Row: { last_seen_at: string; user_id: string }
+        Insert: { last_seen_at?: string; user_id: string }
+        Update: { last_seen_at?: string; user_id?: string }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -467,6 +485,27 @@ export type Database = {
           specialty: string
           subspecialty: string
           times_generated: number
+        }[]
+      }
+      admin_activity_users: {
+        Args: { _search?: string }
+        Returns: {
+          average_score_30d: number | null
+          completed_30d: number
+          consultations_24h: number
+          consultations_30d: number
+          consultations_total: number
+          country: string | null
+          display_name: string
+          email: string
+          id: string
+          is_online: boolean
+          last_seen_at: string | null
+          profession: string | null
+          rating: string | null
+          rating_updated_at: string | null
+          sub_expires_at: string | null
+          sub_status: string
         }[]
       }
       admin_list_users: {
