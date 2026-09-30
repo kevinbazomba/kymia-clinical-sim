@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { createConsultation, shouldShowConsultationStartReminder, setConsultationReminderDisabled } from "@/lib/consultation.functions";
+import { createConsultation, shouldShowConsultationStartReminder } from "@/lib/consultation.functions";
+import { disablePedagogicalReminder, isPedagogicalReminderDisabled } from "@/lib/pedagogical-reminder";
 import { INTERNAL_SUBSPECIALTIES, subspecialtyLabel, subspecialtyDescription } from "@/lib/subspecialties";
 import { getSpecialty, specialtyLabel } from "@/lib/specialties";
 import { useState, type ComponentType } from "react";
@@ -33,7 +34,6 @@ function SubspecialtiesPage() {
   const navigate = useNavigate();
   const create = useServerFn(createConsultation);
   const checkReminder = useServerFn(shouldShowConsultationStartReminder);
-  const disableReminder = useServerFn(setConsultationReminderDisabled);
   const [pending, setPending] = useState<string | null>(null);
   const [pickCycle, setPickCycle] = useState<string | null>(null);
   const [blocked, setBlocked] = useState(false);
@@ -72,7 +72,7 @@ function SubspecialtiesPage() {
     setPending(subId);
     try {
       const { show } = await checkReminder();
-      if (show) {
+      if (show && !isPedagogicalReminderDisabled()) {
         setPendingLaunch({ subId, cycle });
         setShowReminder(true);
         return;
@@ -95,7 +95,7 @@ function SubspecialtiesPage() {
       <PedagogicalCoachDialog
         open={showReminder}
         onContinue={continueLaunch}
-        onDisableReminder={async () => { await disableReminder({ data: { disabled: true } }); }}
+        onDisableReminder={async () => { disablePedagogicalReminder(); }}
       />
       <Dialog open={blocked} onOpenChange={setBlocked}>
         <DialogContent>

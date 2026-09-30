@@ -5,15 +5,16 @@ import { getDashboard, getLeaderboard } from "@/lib/consultation.functions";
 import { getLastJuryWinner } from "@/lib/jury.functions";
 import { SPECIALTIES } from "@/lib/specialties";
 import { Button } from "@/components/ui/button";
-import { Activity, Trophy, Target, Brain, Sparkles, PlayCircle, Gavel, MessageCircle, Crown, Stethoscope, MessagesSquare, PauseCircle, ClipboardCheck, History, Gavel as JuryIcon } from "lucide-react";
+import { Activity, Trophy, Target, Brain, Sparkles, PlayCircle, Gavel, MessageCircle, Crown, Stethoscope, MessagesSquare, PauseCircle, ClipboardCheck, History, Gavel as JuryIcon, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
 import { LanguageHomeBanner } from "@/components/LanguageSwitch";
+import { useEffect, useState } from "react";
 import frHome from "@/locales/fr/home.json";
 import enHome from "@/locales/en/home.json";
 
 const COMMUNITY_URL = "https://chat.whatsapp.com/C269pi8276F8PkR985wzJp?s=cl&p=a&ilr=4";
 const SUBSCRIPTION_WHATSAPP_URL = "https://wa.me/243990918446";
-const EXTENSION_MESSAGE = "Bonjour, je souhaite PROLONGER mon abonnement et profiter des avantages.\n\nMon adresse mail d'inscription sur Kymia est :";
+const RENEWAL_URL = `${SUBSCRIPTION_WHATSAPP_URL}?text=${encodeURIComponent("Bonjour, je souhaite renouveler mon abonnement avant son expiration afin de bénéficier des 7 jours offerts. Mon adresse Kymia est : [à compléter].")}`;
 
 const GUIDE_STEPS: Record<"fr" | "en", Array<{ title: string; desc: string }>> = {
   fr: frHome.guide.steps,
@@ -52,10 +53,41 @@ function HomePage() {
   const steps = GUIDE_STEPS[lang];
   const dateLocale = lang === "en" ? "en-US" : "fr-FR";
   const subscription = data.subscription;
+  const [newsSlide, setNewsSlide] = useState(0);
+  const news = [
+    { eyebrow: "AVANTAGE ABONNÉ", title: "Prolongez votre abonnement : 7 jours offerts", description: "Renouvelez avant la date d’expiration et 7 jours seront ajoutés à votre abonnement actuel." },
+    { eyebrow: "CONSEIL DE RÉVISION", title: "Consultez après avoir révisé", description: "Pour tirer le meilleur de chaque cas clinique, prenez d’abord le temps de revoir les notions utiles, puis entraînez-vous sur Kymia." },
+    { eyebrow: "ÉCHANGEZ ENTRE SOIGNANTS", title: "La Salle de garde est ouverte", description: "Posez vos questions, partagez un cas ou échangez autour de vos préoccupations avec la communauté Kymia." },
+    { eyebrow: "BOUTIQUE KYMIA", title: "Découvrez la boutique Kymia", description: "Retrouvez nos articles sur la boutique en ligne. Elle s’ouvrira dans un nouvel onglet pour vous laisser votre espace Kymia ouvert." },
+  ];
+  useEffect(() => {
+    const timer = window.setInterval(() => setNewsSlide((current) => (current + 1) % news.length), 6000);
+    return () => window.clearInterval(timer);
+  }, [news.length]);
 
   return (
     <div className="space-y-8">
       <LanguageHomeBanner />
+      <section aria-label="Nouveautés de la plateforme" className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-card to-amber-500/10 p-6 shadow-[var(--shadow-card)] md:p-8">
+        <div className="flex min-h-44 flex-col justify-between gap-5 sm:flex-row sm:items-center">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[.16em] text-primary">{news[newsSlide].eyebrow}</p>
+            <h2 className="mt-2 font-serif text-2xl text-foreground md:text-3xl">{news[newsSlide].title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{news[newsSlide].description}</p>
+            <div className="mt-4">
+              {newsSlide === 0 && <a href={RENEWAL_URL} target="_blank" rel="noopener noreferrer"><Button className="bg-emerald-600 text-white hover:bg-emerald-700"><MessageCircle className="mr-2 h-4 w-4" />Je Prolonge</Button></a>}
+              {newsSlide === 1 && <Button variant="outline" onClick={() => navigate({ to: "/specialties" })}>Découvrir les spécialités</Button>}
+              {newsSlide === 2 && <Button variant="outline" onClick={() => navigate({ to: "/salle-de-garde" })}>Accéder à la Salle de garde</Button>}
+              {newsSlide === 3 && <a href="https://draworfit.mychariow.com" target="_blank" rel="noopener noreferrer"><Button variant="outline"><ShoppingBag className="mr-2 h-4 w-4" />Visiter la boutique</Button></a>}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+            <button aria-label="Nouvelle précédente" onClick={() => setNewsSlide((newsSlide - 1 + news.length) % news.length)} className="grid h-9 w-9 place-items-center rounded-full border bg-background/70 text-foreground transition hover:bg-background"><ChevronLeft className="h-4 w-4" /></button>
+            <div className="flex items-center gap-1.5">{news.map((item, index) => <button key={item.eyebrow} aria-label={`Afficher la nouveauté ${index + 1}`} aria-current={index === newsSlide ? "true" : undefined} onClick={() => setNewsSlide(index)} className={`h-2 rounded-full transition-all ${index === newsSlide ? "w-6 bg-primary" : "w-2 bg-muted-foreground/40 hover:bg-muted-foreground/70"}`} />)}</div>
+            <button aria-label="Nouvelle suivante" onClick={() => setNewsSlide((newsSlide + 1) % news.length)} className="grid h-9 w-9 place-items-center rounded-full border bg-background/70 text-foreground transition hover:bg-background"><ChevronRight className="h-4 w-4" /></button>
+          </div>
+        </div>
+      </section>
       {subscription?.is_expiring_soon && (
         <section className="relative overflow-hidden rounded-3xl border border-amber-400/50 bg-gradient-to-r from-amber-50 via-orange-50 to-card p-5 shadow-[var(--shadow-card)] dark:from-amber-950/30 dark:via-orange-950/20">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -66,7 +98,7 @@ function HomePage() {
                 <p className="mt-1 text-sm text-muted-foreground">Il vous reste {subscription.days_remaining} jour{subscription.days_remaining !== 1 ? "s" : ""} pour continuer à profiter pleinement de Kymia.</p>
               </div>
             </div>
-            <a href={`${SUBSCRIPTION_WHATSAPP_URL}?text=${encodeURIComponent(EXTENSION_MESSAGE)}`} target="_blank" rel="noopener noreferrer" className="shrink-0">
+            <a href={RENEWAL_URL} target="_blank" rel="noopener noreferrer" className="shrink-0">
               <Button className="bg-emerald-600 text-white hover:bg-emerald-700"><MessageCircle className="mr-2 h-4 w-4" />PROLONGER MON ABONNEMENT</Button>
             </a>
           </div>
