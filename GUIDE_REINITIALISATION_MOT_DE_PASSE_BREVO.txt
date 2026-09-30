@@ -17,7 +17,8 @@ CONFIGURATION BREVO
 CONFIGURATION SUPABASE
 ----------------------
 
-Dans Authentication > Emails > SMTP Settings, renseigner :
+Dans Authentication > Emails > SMTP Settings, activer « Enable custom SMTP »
+puis renseigner :
 
 - Host : smtp-relay.brevo.com
 - Port : 587
@@ -25,6 +26,10 @@ Dans Authentication > Emails > SMTP Settings, renseigner :
 - Password : la clé SMTP générée par Brevo
 - Sender email address : l'adresse validée dans Brevo
 - Sender name : Kymia Clinical Sim
+
+Dans Authentication > Hooks, désactiver ou supprimer le hook « Send Email »
+créé pour Maileroo. Sinon Supabase continuera d'appeler cette fonction au lieu
+du SMTP Brevo.
 
 Dans Authentication > URL Configuration :
 

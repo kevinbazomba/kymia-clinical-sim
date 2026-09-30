@@ -43,6 +43,15 @@ function useProfessions(t: TFunction) {
   ];
 }
 
+function authErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message) return message;
+  }
+  return fallback;
+}
+
 function AuthPage() {
   const { mode, redirect } = Route.useSearch();
   const navigate = useNavigate();
@@ -137,7 +146,7 @@ function SocialButtons() {
       if (result.error) throw result.error;
       // If redirected, browser navigates away. If tokens set, page will react to session.
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("auth.social.error"));
+      toast.error(authErrorMessage(err, t("auth.social.error")));
     } finally {
       setLoading(null);
     }
@@ -218,10 +227,14 @@ function SigninForm({ onDone, onSwitchSignup, onReset }: { onDone: () => void; o
       toast.success(t("auth.signin.welcome"));
       onDone();
     } catch (err: unknown) {
+<<<<<<< HEAD
       const message = err instanceof Error ? err.message : "";
       toast.error(message.toLowerCase().includes("invalid login credentials")
         ? t("auth.signin.invalidCredentials")
         : message || t("auth.signin.unknownError"));
+=======
+      toast.error(authErrorMessage(err, t("auth.signin.unknownError")));
+>>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
     } finally {
       setLoading(false);
     }
@@ -282,7 +295,7 @@ function ResetForm({ onBack }: { onBack: () => void }) {
       // attackers from discovering which email addresses have an account.
       setSent(true);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("auth.reset.unknownError"));
+      toast.error(authErrorMessage(err, t("auth.reset.unknownError")));
     } finally {
       setLoading(false);
     }
@@ -340,7 +353,7 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<"signed-in" | "confirmation-required" | null>(null);
 
   // Auto-select dial code from country
   useEffect(() => {
@@ -369,8 +382,8 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
       });
       if (error) throw error;
       const uid = signUp.user?.id;
-      if (uid) {
-        await supabase.from("profiles").update({
+      if (uid && signUp.session) {
+        const { error: profileError } = await supabase.from("profiles").update({
           display_name: displayName,
           whatsapp,
           profession,
@@ -378,7 +391,22 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           first_name: firstName, last_name: lastName,
         } as any).eq("id", uid);
+        if (profileError) throw profileError;
       }
+      // A session is returned when email confirmation is disabled. In that
+      // case the user is already authenticated and can enter the app now.
+      if (signUp.session) {
+        setSuccess("signed-in");
+        setTimeout(() => {
+          toast.success(t("auth.signup.success.toast"));
+          onDone();
+        }, 1400);
+      } else {
+        // Supabase is configured to require email confirmation. Do not send
+        // the user to a protected route, as they have no session yet.
+        setSuccess("confirmation-required");
+      }
+<<<<<<< HEAD
       if (signUp.session) {
         setSuccess(true);
         toast.success(t("auth.signup.success.toast"));
@@ -386,8 +414,10 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
       } else {
         setSuccess(true);
       }
+=======
+>>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("auth.signup.unknownError"));
+      toast.error(authErrorMessage(err, t("auth.signup.unknownError")));
       setLoading(false);
     }
   }
@@ -398,9 +428,20 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
         <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600 animate-scale-in">
           <CheckCircle2 className="h-12 w-12" strokeWidth={2} />
         </div>
+<<<<<<< HEAD
         <p className="mt-6 font-serif text-2xl text-foreground">{t("auth.signup.success.title")}</p>
         <p className="mt-2 text-center text-sm text-muted-foreground">{t("auth.signup.success.subtitle")}</p>
         <Button variant="outline" className="mt-6" onClick={onSwitchSignin}>{t("auth.signup.success.signIn")}</Button>
+=======
+        <p className="mt-6 font-serif text-2xl text-foreground">
+          {success === "signed-in" ? t("auth.signup.success.title") : "Confirmez votre adresse e-mail"}
+        </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          {success === "signed-in"
+            ? t("auth.signup.success.subtitle")
+            : "Un lien d’activation vient d’être envoyé. Ouvrez-le pour finaliser votre inscription, puis connectez-vous."}
+        </p>
+>>>>>>> 01bedea557882a678af44b151ef356cddbb33d2a
       </div>
     );
   }
