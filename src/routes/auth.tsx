@@ -168,16 +168,6 @@ function SocialButtons() {
         )}
         {t("auth.social.google")}
       </Button>
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full cursor-not-allowed opacity-60"
-        disabled
-        title="Connexion Apple bientôt disponible"
-      >
-        <AppleIcon className="mr-2 h-4 w-4" />
-        {t("auth.social.apple")}
-      </Button>
       <div className="relative py-2">
         <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
         <div className="relative flex justify-center text-xs uppercase">
@@ -198,14 +188,6 @@ function GoogleIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-function AppleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16.36 12.6c0-2.55 2.09-3.78 2.19-3.84-1.19-1.74-3.05-1.98-3.71-2-1.58-.16-3.08.93-3.88.93-.8 0-2.03-.9-3.34-.88-1.72.03-3.31 1-4.19 2.54-1.79 3.1-.46 7.7 1.28 10.22.85 1.23 1.87 2.61 3.19 2.56 1.28-.05 1.76-.83 3.31-.83s1.98.83 3.33.8c1.38-.02 2.25-1.25 3.09-2.49.98-1.42 1.38-2.8 1.4-2.87-.03-.01-2.69-1.03-2.71-4.14zM13.9 4.9c.71-.86 1.19-2.05 1.06-3.24-1.02.04-2.26.68-3 1.54-.66.76-1.24 1.98-1.09 3.14 1.14.09 2.31-.58 3.03-1.44z"/>
-    </svg>
-  );
-}
-
 /* ---------------- Sign-in ---------------- */
 
 function SigninForm({ onDone, onSwitchSignup, onReset }: { onDone: () => void; onSwitchSignup: () => void; onReset: () => void }) {
