@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -140,11 +139,13 @@ function SocialButtons() {
   async function handle(provider: "google" | "apple") {
     setLoading(provider);
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
       });
-      if (result.error) throw result.error;
-      // If redirected, browser navigates away. If tokens set, page will react to session.
+      if (error) throw error;
     } catch (err) {
       toast.error(authErrorMessage(err, t("auth.social.error")));
     } finally {
