@@ -1,5 +1,4 @@
-GUIDE — Réinitialisation de mot de passe Kymia avec Brevo
-==========================================================
+=====================================================
 
 Le lien « Mot de passe oublié ? » est disponible sur la page de connexion.
 L'utilisateur saisit son e-mail, reçoit un lien sécurisé, puis choisit un
