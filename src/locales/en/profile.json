@@ -5,10 +5,16 @@
     "subtitle": "Customize your public identity."
   },
   "form": {
+    "email": "Email address",
+    "firstName": "First name",
+    "lastName": "Last name",
     "displayName": "Display name",
+    "profession": "Profession",
     "level": "Level",
     "country": "Country",
     "countryPlaceholder": "France",
+    "whatsapp": "WhatsApp",
+    "whatsappPlaceholder": "+243 000 000 000",
     "save": "Save"
   },
   "theme": {

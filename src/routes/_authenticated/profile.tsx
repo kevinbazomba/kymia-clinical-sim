@@ -29,13 +29,25 @@ function ProfilePage() {
   const { data } = useQuery({ queryKey: ["dashboard"], queryFn: () => dashFn() });
   const { data: wins } = useQuery({ queryKey: ["my-jury-wins"], queryFn: () => winsFn() });
 
-  const [form, setForm] = useState({ display_name: "", level: "student", country: "" });
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    display_name: "",
+    profession: "",
+    level: "student",
+    country: "",
+    whatsapp: "",
+  });
   useEffect(() => {
     if (data?.profile) {
       setForm({
+        first_name: data.profile.first_name ?? "",
+        last_name: data.profile.last_name ?? "",
         display_name: data.profile.display_name ?? "",
+        profession: data.profile.profession ?? "",
         level: data.profile.level ?? "student",
         country: data.profile.country ?? "",
+        whatsapp: data.profile.whatsapp ?? "",
       });
     }
   }, [data?.profile]);
@@ -68,8 +80,26 @@ function ProfilePage() {
         className="space-y-4 rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)]"
       >
         <div>
+          <Label>{t("profile.form.email")}</Label>
+          <Input type="email" value={data?.email ?? ""} className="mt-1" disabled />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>{t("profile.form.firstName")}</Label>
+            <Input value={form.first_name} onChange={(e) => setForm((s) => ({ ...s, first_name: e.target.value }))} className="mt-1" maxLength={60} />
+          </div>
+          <div>
+            <Label>{t("profile.form.lastName")}</Label>
+            <Input value={form.last_name} onChange={(e) => setForm((s) => ({ ...s, last_name: e.target.value }))} className="mt-1" maxLength={60} />
+          </div>
+        </div>
+        <div>
           <Label>{t("profile.form.displayName")}</Label>
           <Input value={form.display_name} onChange={(e) => setForm((s) => ({ ...s, display_name: e.target.value }))} className="mt-1" maxLength={60} required />
+        </div>
+        <div>
+          <Label>{t("profile.form.profession")}</Label>
+          <Input value={form.profession} onChange={(e) => setForm((s) => ({ ...s, profession: e.target.value }))} className="mt-1" maxLength={60} />
         </div>
         <div>
           <Label>{t("profile.form.level")}</Label>
@@ -88,6 +118,10 @@ function ProfilePage() {
         <div>
           <Label>{t("profile.form.country")}</Label>
           <Input value={form.country} onChange={(e) => setForm((s) => ({ ...s, country: e.target.value }))} className="mt-1" maxLength={60} placeholder={t("profile.form.countryPlaceholder")} />
+        </div>
+        <div>
+          <Label>{t("profile.form.whatsapp")}</Label>
+          <Input type="tel" value={form.whatsapp} onChange={(e) => setForm((s) => ({ ...s, whatsapp: e.target.value }))} className="mt-1" maxLength={30} placeholder={t("profile.form.whatsappPlaceholder")} />
         </div>
         <Button type="submit" disabled={mut.isPending}>
           {mut.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

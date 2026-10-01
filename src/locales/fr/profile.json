@@ -5,10 +5,16 @@
     "subtitle": "Personnalisez votre identité publique."
   },
   "form": {
+    "email": "Adresse e-mail",
+    "firstName": "Prénom",
+    "lastName": "Nom",
     "displayName": "Nom affiché",
+    "profession": "Profession",
     "level": "Niveau",
     "country": "Pays",
     "countryPlaceholder": "France",
+    "whatsapp": "WhatsApp",
+    "whatsappPlaceholder": "+243 000 000 000",
     "save": "Enregistrer"
   },
   "theme": {

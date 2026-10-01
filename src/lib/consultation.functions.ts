@@ -766,6 +766,7 @@ export const getDashboard = createServerFn({ method: "GET" })
       : 0;
     return {
       profile: prof,
+      email: typeof context.claims.email === "string" ? context.claims.email : null,
       total: consults?.length ?? 0,
       completed: completed.length,
       avg_score: avg,
@@ -796,6 +797,8 @@ export const updateProfile = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       display_name: z.string().trim().min(1).max(60),
+      first_name: z.string().trim().max(60).optional().nullable(),
+      last_name: z.string().trim().max(60).optional().nullable(),
       level: z.string().max(40),
       country: z.string().max(60).optional().nullable(),
       whatsapp: z.string().max(30).optional().nullable(),
@@ -804,6 +807,8 @@ export const updateProfile = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("profiles").update({
       display_name: data.display_name,
+      first_name: data.first_name || null,
+      last_name: data.last_name || null,
       level: data.level,
       country: data.country ?? null,
       whatsapp: data.whatsapp ?? null,
