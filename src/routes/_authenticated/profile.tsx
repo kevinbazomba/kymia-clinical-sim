@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Crown, Loader2, Moon, Palette, Sun, Trophy } from "lucide-react";
+import { Crown, Loader2, Moon, Palette, Sun, Trophy, MessageCircle, Gift } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useI18n, makeT, getStoredLang } from "@/lib/i18n";
@@ -55,7 +55,12 @@ function ProfilePage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <header>
         <h1 className="font-serif text-4xl">{t("profile.header.title")}</h1>
-        <p className="text-muted-foreground">{t("profile.header.subtitle")}</p>
+        <p className="mt-1 text-muted-foreground">{t("profile.header.subtitle")}</p>
+        {data?.profile?.display_name && (
+          <p className="mt-3 inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-sm font-semibold text-foreground">
+            {data.profile.display_name}
+          </p>
+        )}
       </header>
 
       <form
@@ -171,6 +176,8 @@ function SubscriptionCard({
   const totalDays = subscription?.starts_at && subscription?.expires_at
     ? Math.max(1, Math.ceil((new Date(subscription.expires_at).getTime() - new Date(subscription.starts_at).getTime()) / 86_400_000)) : 0;
   const progress = subscription?.active && totalDays ? Math.min(100, Math.round((subscription.days_remaining / totalDays) * 100)) : 0;
+  const renewalMessage = "Bonjour, je souhaite renouveler mon abonnement avant son expiration afin de bénéficier des 7 jours offerts. Mon adresse Kymia est : [à compléter].";
+  const renewalUrl = `https://wa.me/243990918446?text=${encodeURIComponent(renewalMessage)}`;
 
   return (
     <section className={`rounded-2xl border bg-card p-6 shadow-[var(--shadow-card)] ${subscription?.is_expiring_soon ? "border-amber-400/60" : ""}`}>
@@ -193,6 +200,23 @@ function SubscriptionCard({
           <Progress value={progress} className={subscription.is_expiring_soon ? "[&>div]:bg-amber-500" : ""} />
         </div>
       )}
+      <div className="mt-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-amber-500/5 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-600"><Gift className="h-5 w-5" /></span>
+          <div>
+            <h3 className="font-semibold text-foreground">Renouvelez à l’avance et profitez de 7 jours offerts</h3>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">En renouvelant votre abonnement avant son expiration, vous bénéficiez de 7 jours supplémentaires, ajoutés à votre période actuelle.</p>
+          </div>
+        </div>
+        <div className="mt-4 overflow-hidden rounded-xl border bg-background/70">
+          <div className="grid grid-cols-2 bg-secondary/60 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span>Forfait</span><span className="text-right">Tarif</span></div>
+          {[{ plan: "1 mois", price: "2 900 FCFA / 5 $" }, { plan: "3 mois", price: "7 600 FCFA / 13 $" }, { plan: "1 an", price: "32 000 FCFA / 55 $" }].map((item) => <div key={item.plan} className="grid grid-cols-2 items-center border-t px-3 py-2.5 text-sm"><span className="font-medium">{item.plan}</span><span className="text-right font-semibold text-primary">{item.price}</span></div>)}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">Pour prolonger votre abonnement, écrivez-nous sur WhatsApp :</p>
+        <a href={renewalUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex">
+          <Button className="bg-emerald-600 text-white hover:bg-emerald-700"><MessageCircle className="mr-2 h-4 w-4" />Je Prolonge</Button>
+        </a>
+      </div>
     </section>
   );
 }

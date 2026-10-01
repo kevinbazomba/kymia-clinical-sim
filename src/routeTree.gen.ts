@@ -29,6 +29,7 @@ import { Route as LegalDocumentRouteImport } from './routes/legal.$document'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
 import { Route as AuthenticatedAdminDiversityRouteImport } from './routes/_authenticated/admin.diversity'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedConsultationIdRouteImport } from './routes/_authenticated/consultation.$id'
@@ -143,6 +144,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminActivityRoute =
+  AuthenticatedAdminActivityRouteImport.update({
+    id: '/activity',
+    path: '/activity',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminDiversityRoute =
   AuthenticatedAdminDiversityRouteImport.update({
     id: '/diversity',
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/diversity': typeof AuthenticatedAdminDiversityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/consultation/$id': typeof AuthenticatedConsultationIdRoute
@@ -236,6 +244,7 @@ export interface FileRoutesByTo {
   '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/diversity': typeof AuthenticatedAdminDiversityRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/consultation/$id': typeof AuthenticatedConsultationIdRoute
@@ -267,6 +276,7 @@ export interface FileRoutesById {
   '/legal/$document': typeof LegalDocumentRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/diversity': typeof AuthenticatedAdminDiversityRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/consultation/$id': typeof AuthenticatedConsultationIdRoute
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/activity'
     | '/admin/diversity'
     | '/admin/users'
     | '/consultation/$id'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/activity'
     | '/admin/diversity'
     | '/admin/users'
     | '/consultation/$id'
@@ -356,6 +368,7 @@ export interface FileRouteTypes {
     | '/legal/$document'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/admin/activity'
     | '/_authenticated/admin/diversity'
     | '/_authenticated/admin/users'
     | '/_authenticated/consultation/$id'
@@ -523,6 +536,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/activity': {
+      id: '/_authenticated/admin/activity'
+      path: '/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AuthenticatedAdminActivityRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/diversity': {
       id: '/_authenticated/admin/diversity'
       path: '/diversity'
@@ -583,12 +603,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
   AuthenticatedAdminDiversityRoute: typeof AuthenticatedAdminDiversityRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
   AuthenticatedAdminDiversityRoute: AuthenticatedAdminDiversityRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

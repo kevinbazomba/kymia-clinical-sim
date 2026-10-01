@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { checkAdmin } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, LayoutDashboard, Users, LogOut, ArrowLeft, Shuffle } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, Users, LogOut, ArrowLeft, Shuffle, Activity } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -60,6 +60,7 @@ function AdminLayout() {
         <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 pb-2 text-sm sm:px-4">
           <AdminLink to="/admin" icon={<LayoutDashboard className="h-4 w-4" />}>Tableau de bord</AdminLink>
           <AdminLink to="/admin/users" icon={<Users className="h-4 w-4" />}>Utilisateurs & abonnements</AdminLink>
+          <AdminLink to="/admin/activity" icon={<Activity className="h-4 w-4" />}>Activité</AdminLink>
           <AdminLink to="/admin/diversity" icon={<Shuffle className="h-4 w-4" />}>Diversité des cas</AdminLink>
         </nav>
       </header>

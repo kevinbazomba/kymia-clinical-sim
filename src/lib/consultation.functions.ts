@@ -499,11 +499,12 @@ export const requestExam = createServerFn({ method: "POST" })
     const allExams = Object.values(exams).flat();
     const biologyCount = allExams.filter((exam) => exam.category === "biology" || (exam.category === "custom" && inferCustomCategory(exam.name) === "biology")).length;
     const imagingCount = allExams.filter((exam) => exam.category === "imaging" || (exam.category === "custom" && inferCustomCategory(exam.name) === "imaging")).length;
-    const exhaustedCategory = chargedCategory === "biology" && biologyCount >= 5
-      ? "biology"
-      : chargedCategory === "imaging" && imagingCount >= 4
-        ? "imaging"
-        : null;
+    // La famille ne peut plus financer d'examens après le cumul des deux
+    // plafonds. Avant ce seuil global, chaque catégorie reste disponible.
+    const exhaustedCategory = biologyCount >= 5 && imagingCount >= 4
+      && (chargedCategory === "biology" || chargedCategory === "imaging")
+      ? chargedCategory
+      : null;
     if (exhaustedCategory) {
       const lang = normalizeLang((row as { language?: string }).language);
       const warning = lang === "en"
@@ -728,21 +729,16 @@ Structure la fiche en Markdown avec des titres courts : définition, physiopatho
 export const shouldShowConsultationStartReminder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("should_show_consultation_start_reminder" as never);
+    const { count, error } = await context.supabase
+      .from("consultations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", context.userId)
+      .eq("status", "completed");
     if (error) {
       console.error("Unable to evaluate consultation start reminder", error.message);
       return { show: false };
     }
-    return { show: data === true };
-  });
-
-export const setConsultationReminderDisabled = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ disabled: z.boolean() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("set_pedagogical_reminder_disabled" as never, { _disabled: data.disabled } as never);
-    if (error) throw new Error(error.message);
-    return { success: true };
+    return { show: (count ?? 0) >= 2 };
   });
 
 // ---------- Dashboard ----------

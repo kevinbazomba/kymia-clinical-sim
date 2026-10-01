@@ -223,7 +223,7 @@ function SigninForm({ onDone, onSwitchSignup, onReset }: { onDone: () => void; o
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
       if (error) throw error;
       toast.success(t("auth.signin.welcome"));
       onDone();
@@ -246,12 +246,12 @@ function SigninForm({ onDone, onSwitchSignup, onReset }: { onDone: () => void; o
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="email">{t("auth.signin.email")}</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@hopital.fr" className="mt-1" />
+          <Input id="email" type="email" autoComplete="email" autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@hopital.fr" className="mt-1" />
         </div>
         <div>
           <Label htmlFor="password">{t("auth.signin.password")}</Label>
           <div className="relative mt-1">
-            <Input id="password" type={showPassword ? "text" : "password"} required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
+            <Input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="pr-10" />
             <button type="button" aria-label={showPassword ? t("auth.signin.hidePassword") : t("auth.signin.showPassword")} onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -367,7 +367,7 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
       const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
       const whatsapp = `${dialCode} ${phone.trim()}`;
       const { data: signUp, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         options: {
           emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
@@ -501,7 +501,7 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
           <StepHeader icon={<Mail className="h-5 w-5" />} title={t("auth.signup.step3.title")} subtitle={t("auth.signup.step3.subtitle")} />
           <div>
             <Label htmlFor="email">{t("auth.signup.step3.email")}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
+            <Input id="email" type="email" autoComplete="email" autoCapitalize="none" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" />
           </div>
           <div>
             <Label htmlFor="wa">{t("auth.signup.step3.whatsapp")}</Label>
@@ -525,7 +525,7 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
           <div>
             <Label htmlFor="pwd">{t("auth.signup.step4.password")}</Label>
             <div className="relative mt-1">
-              <Input id="pwd" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} className="pr-10" />
+              <Input id="pwd" type={showPassword ? "text" : "password"} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} className="pr-10" />
               <button type="button" aria-label={showPassword ? t("auth.signin.hidePassword") : t("auth.signin.showPassword")} onClick={() => setShowPassword((v) => !v)} className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -543,7 +543,7 @@ function SignupWizard({ onDone, onSwitchSignin }: { onDone: () => void; onSwitch
           </div>
           <div>
             <Label htmlFor="cpwd">{t("auth.signup.step4.confirmPassword")}</Label>
-            <Input id="cpwd" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1" />
+            <Input id="cpwd" type={showPassword ? "text" : "password"} autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1" />
             {confirmPassword && confirmPassword !== password && (
               <p className="mt-1 text-xs text-destructive">{t("auth.signup.step4.mismatch")}</p>
             )}
