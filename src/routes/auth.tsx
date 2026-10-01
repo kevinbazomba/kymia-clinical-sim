@@ -135,8 +135,8 @@ function SideCopy() {
 
 function SocialButtons() {
   const { t } = useI18n();
-  const [loading, setLoading] = useState<"google" | "apple" | null>(null);
-  async function handle(provider: "google" | "apple") {
+  const [loading, setLoading] = useState<"google" | null>(null);
+  async function handle(provider: "google") {
     setLoading(provider);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -171,15 +171,11 @@ function SocialButtons() {
       <Button
         type="button"
         variant="outline"
-        className="w-full"
-        onClick={() => handle("apple")}
-        disabled={loading !== null}
+        className="w-full cursor-not-allowed opacity-60"
+        disabled
+        title="Connexion Apple bientôt disponible"
       >
-        {loading === "apple" ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <AppleIcon className="mr-2 h-4 w-4" />
-        )}
+        <AppleIcon className="mr-2 h-4 w-4" />
         {t("auth.social.apple")}
       </Button>
       <div className="relative py-2">
